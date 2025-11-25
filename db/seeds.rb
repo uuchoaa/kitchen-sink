@@ -1,9 +1,44 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+puts "Seeding database..."
+
+puts "Clearing existing records..."
+Deal.destroy_all
+Recruter.destroy_all
+Agency.destroy_all
+
+puts "Creating agencies, recruters, and deals..."
+# bin/rails g scaffold Agency name
+tech_teems = Agency.create({
+  name: '@TechTeams'
+})
+
+camila = Recruter.create({
+  agency: tech_teems,
+  name: 'Camila Felippo',
+  linkedin_chat_url: 'https://www.linkedin.com/messaging/thread/2-YzQ2OWYzOTQtNWI0ZS00MzUxLWFjOGYtNzVkMzNjNWIyNjUwXzEwMA==/'
+})
+
+description = <<~DESC
+Opportunity @TechTeems - Engineering Manager
+Hi!
+
+Hope you’re doing well!
+We’re currently hiring for an Engineering Manager, and your background caught our attention.
+
+You can find all the details about the role here: Engineering Manager
+
+If it sounds like a good fit, feel free to apply directly through the link, and we’ll reach out soon with the next steps!
+
+Best regards,
+
+Camila Filippo
+Recruiting Manager
+DESC
+
+Deal.create({
+  agency: tech_teems,
+  recruter: camila,
+  description: description,
+  stage: :open
+})
+
+puts "Seeded #{Agency.count} agencies, #{Recruter.count} recruters, and #{Deal.count} deals."
