@@ -8,7 +8,7 @@ class Views::Base < Components::Base
   def around_template
     doctype
 
-    html do
+    html(class: "bg-white h-full") do
       head do
         title { page_title || "Resume" }
 
@@ -26,11 +26,33 @@ class Views::Base < Components::Base
         javascript_importmap_tags
       end
 
-      body do
-        main(class: "container mx-auto mt-28 px-5 flex") do
-          yield
+      body(class: "bg-white h-full") do
+        div(class: "min-h-full") do
+          render_navbar
+
+          div(class: "py-10") do
+            header do
+              div(class: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8") do
+                h1(class: "text-3xl font-bold leading-tight text-gray-900") { page_header }
+              end
+            end
+
+            main(class: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8") do
+              yield
+            end
+          end
         end
       end
     end
+  end
+
+  def page_header
+    page_title
+  end
+
+  private
+
+  def render_navbar
+    # render Views::Shared::Navbar.new
   end
 end
