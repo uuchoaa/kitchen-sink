@@ -71,9 +71,9 @@ module Views
         column_name = association.klass.model_name.human
 
         table.column(column_name) do |item|
-          value = item.public_send(association.name)
+          related_object = item.public_send(association.name)
           component = Attributes::BelongsToAttribute.new(
-            value: value&.id,
+            value: related_object&.id,
             attribute_name: association.name.to_s,
             model_class: data.model,
             association: association
