@@ -41,14 +41,9 @@ module Views
         column_name = association.klass.model_name.human(count: 2)
 
         table.column(column_name) do |item|
-          related_objects = item.public_send(association.name)
-
-          case association.macro
-          when :has_many, :has_and_belongs_to_many
-            "#{related_objects.count} #{association.klass.model_name.human(count: related_objects.count)}"
-          when :has_one
-            related_objects&.try(:name) || related_objects&.try(:title) || related_objects&.to_s
-          end
+          value = item.public_send(association.name)
+          component = attribute_component_for_association(value, association)
+          render component
         end
       end
 
@@ -66,11 +61,9 @@ module Views
         column_name = model_class.human_attribute_name(attr)
 
         table.column(column_name) do |item|
-          if attr == "id"
-            id_link(item)
-          else
-            format_value(item.public_send(attr))
-          end
+          value = item.public_send(attr)
+          component = attribute_component_for(attr, value, model_class)
+          render component
         end
       end
 
@@ -78,47 +71,50 @@ module Views
         column_name = association.klass.model_name.human
 
         table.column(column_name) do |item|
-          related_object = item.public_send(association.name)
-          next if related_object.nil?
-
-          related_object.try(:name) ||
-          related_object.try(:title) ||
-          related_object.try(:email) ||
-          "#{association.klass.model_name.human} ##{related_object.id}"
+          value = item.public_send(association.name)
+          component = Attributes::BelongsToAttribute.new(
+            value: value&.id,
+            attribute_name: association.name.to_s,
+            model_class: data.model,
+            association: association
+          )
+          render component
         end
       end
 
-      def format_association(value, association)
-        return nil if value.nil?
-
-        case association.macro
-        when :belongs_to, :has_one
-          # Busca o objeto relacionado e tenta exibir um atributo legível
-          related_object = association.klass.find_by(id: value)
-          return nil unless related_object
-
-          related_object.try(:name) ||
-          related_object.try(:title) ||
-          related_object.try(:email) ||
-          "#{association.klass.model_name.human} ##{related_object.id}"
-        when :has_many, :has_and_belongs_to_many
-          "#{value.count} #{association.klass.model_name.human(count: value.count)}"
-        end
-      end
-
-      def format_value(value)
-        case value
-        when Time, DateTime, ActiveSupport::TimeWithZone
-          I18n.l(value, format: :short)
-        when Date
-          I18n.l(value, format: :short)
+      def attribute_component_for(attr, value, model_class)
+        case attr
+        when "id"
+          Attributes::IdAttribute.new(value: value, attribute_name: attr, model_class: model_class)
+        when "created_at", "updated_at"
+          Attributes::TimestampAttribute.new(value: value, attribute_name: attr, model_class: model_class)
         else
-          value
+          # Verifica se é enum
+          if model_class.defined_enums.key?(attr)
+            Attributes::EnumAttribute.new(value: value, attribute_name: attr, model_class: model_class)
+          else
+            Attributes::Base.new(value: value, attribute_name: attr, model_class: model_class)
+          end
         end
       end
 
-      def id_link(item)
-        a(href: "/#{data.model_name.route_key}/#{item.id}") { item.id }
+      def attribute_component_for_association(value, association)
+        case association.macro
+        when :has_many, :has_and_belongs_to_many
+          Attributes::HasManyAttribute.new(
+            value: value,
+            attribute_name: association.name.to_s,
+            model_class: association.active_record,
+            association: association
+          )
+        when :has_one
+          Attributes::BelongsToAttribute.new(
+            value: value&.id,
+            attribute_name: association.name.to_s,
+            model_class: association.active_record,
+            association: association
+          )
+        end
       end
     end
   end
