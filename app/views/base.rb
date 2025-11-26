@@ -1,9 +1,36 @@
 # frozen_string_literal: true
 
 class Views::Base < Components::Base
-  # The `Views::Base` is an abstract class for all your views.
+  include Phlex::Rails::Helpers::CSRFMetaTags
+  include Phlex::Rails::Helpers::StyleSheetLinkTag
+  include Phlex::Rails::Helpers::JavaScriptImportmapTags
 
-  # By default, it inherits from `Components::Base`, but you
-  # can change that to `Phlex::HTML` if you want to keep views and
-  # components independent.
+  def around_template
+    doctype
+
+    html do
+      head do
+        title { page_title || "Resume" }
+
+        meta(name: "viewport", content: "width=device-width,initial-scale=1")
+        meta(name: "apple-mobile-web-app-capable", content: "yes")
+        meta(name: "application-name", content: "Resume")
+        meta(name: "mobile-web-app-capable", content: "yes")
+
+        link(rel: "icon", href: "/icon.png", type: "image/png")
+        link(rel: "icon", href: "/icon.svg", type: "image/svg+xml")
+        link(rel: "apple-touch-icon", href: "/icon.png")
+
+        csrf_meta_tags
+        stylesheet_link_tag :app, "data-turbo-track": "reload"
+        javascript_importmap_tags
+      end
+
+      body do
+        main(class: "container mx-auto mt-28 px-5 flex") do
+          yield
+        end
+      end
+    end
+  end
 end
