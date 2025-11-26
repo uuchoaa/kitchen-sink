@@ -17,7 +17,14 @@ module Components::Attributes
     private
 
     def render_value
-      plain value.to_s if value
+      return unless value
+      
+      text = value.to_s
+      if text.length > 50
+        plain text.truncate(50)
+      else
+        plain text
+      end
     end
   end
 end
