@@ -3,7 +3,8 @@ module Views
     class Index < Views::Base
       attr_reader :agencies
 
-      def initialize(agencies:)
+      def initialize(agencies:, request:)
+        @request = request
         @agencies = agencies
       end
 

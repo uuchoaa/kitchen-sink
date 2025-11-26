@@ -5,6 +5,8 @@ class Views::Base < Components::Base
   include Phlex::Rails::Helpers::StyleSheetLinkTag
   include Phlex::Rails::Helpers::JavaScriptImportmapTags
 
+  attr_reader :request
+
   def around_template
     doctype
 
@@ -61,11 +63,7 @@ class Views::Base < Components::Base
               render_logo
             end
 
-            div(class: "hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8") do
-              # placeholder
-              a(href: "#", class: "inline-flex items-center border-b-2 border-indigo-600 px-1 pt-1 text-sm font-medium text-gray-900 dark:border-indigo-500 dark:text-white") { "Dashboard" }
-              a(href: "#", class: "inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-white/20 dark:hover:text-gray-200") { "Teams" }
-            end
+            render_desktop_menu
           end
 
           div(class: "hidden sm:ml-6 sm:flex sm:items-center") do
@@ -83,6 +81,20 @@ class Views::Base < Components::Base
   end
 
   def render_mobile_menu
+  end
+
+  def render_desktop_menu
+    # div(class: "hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8") do
+    #   # placeholder
+    #   a(href: "#", class: "inline-flex items-center border-b-2 border-indigo-600 px-1 pt-1 text-sm font-medium text-gray-900 dark:border-indigo-500 dark:text-white") { "Dashboard" }
+    #   a(href: "#", class: "inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-white/20 dark:hover:text-gray-200") { "Teams" }
+    # end
+    #
+
+    render Nav.new(request.path) do |nav|
+      nav.item("/agencies") { "Agencias" }
+      nav.item("/recruters") { "Recrutadores" }
+    end
   end
 
   def render_logo
