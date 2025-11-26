@@ -49,7 +49,14 @@ class DealsController < ApplicationController
   def update
     respond_to do |format|
       if @deal.update(deal_params)
-        format.html { redirect_to @deal, notice: "Deal was successfully updated.", status: :see_other }
+        # Se veio do Kanban (referer contém /kanban), redireciona para lá
+        redirect_path = if request.referer&.include?("/kanban")
+          kanban_deals_path
+        else
+          @deal
+        end
+
+        format.html { redirect_to redirect_path, notice: "Deal was successfully updated.", status: :see_other }
         format.json { render :show, status: :ok, location: @deal }
       else
         format.html { render :edit, status: :unprocessable_entity }

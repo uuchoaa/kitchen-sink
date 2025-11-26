@@ -42,6 +42,12 @@ export default class extends Controller {
 
     // Fecha o menu
     this.close()
+
+    // Se o select está dentro de um form, faz submit automático
+    const form = this.element.closest('form')
+    if (form) {
+      form.requestSubmit()
+    }
   }
 
   clickOutside(event) {

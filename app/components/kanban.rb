@@ -18,7 +18,7 @@ class Components::Kanban < Components::Base
   def render_column(column_key, &card_block)
     items = @grouped_data[column_key] || []
 
-    div(class: "flex-shrink-0 w-80 bg-gray-100 rounded-lg p-4 min-h-[100px]") do
+    div(class: "flex-shrink-0 w-80 bg-gray-100 rounded-lg p-4 min-h-[600px]") do
       # Header da coluna
       div(class: "flex items-center justify-between mb-4") do
         h3(class: "text-sm font-semibold text-gray-900") do

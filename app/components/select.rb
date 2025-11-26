@@ -5,7 +5,7 @@ class Components::Select < Components::Base
     @selected = selected
     @label = label
     @id = id || "select_#{name}_#{rand(1000)}"
-    
+
     # Busca o label da opção selecionada
     @selected_label = if @selected
       option = @options.find { |opt| opt[:value].to_s == @selected.to_s }
@@ -49,7 +49,7 @@ class Components::Select < Components::Base
       ) do
         plain(@selected_label || "Selecione...")
       end
-      
+
       # SVG Chevron
       svg(
         viewBox: "0 0 16 16",
