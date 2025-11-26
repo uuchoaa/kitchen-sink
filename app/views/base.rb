@@ -35,13 +35,7 @@ class Views::Base < Components::Base
           render_navbar
 
           div(class: "py-10") do
-            header do
-              div(class: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8") do
-                h1(class: "text-3xl font-bold leading-tight text-gray-900 text-center") { page_header }
-              end
-            end
-
-            main(class: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-8") do
+            main(class: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8") do
               yield
             end
           end
