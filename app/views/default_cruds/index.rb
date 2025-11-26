@@ -6,6 +6,10 @@ module Views
       end
 
       def view_template(&)
+        render Components::PageHeader.new(page_title) do |header|
+          header.action("Novo", href: "/#{data.model_name.route_key}/new", primary: true)
+        end
+
         render Table.new(data) { |table| setup_columns(table) }
       end
 

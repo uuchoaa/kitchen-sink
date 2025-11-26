@@ -17,15 +17,15 @@ module Components::Attributes
 
       count = value.count
       label_text = "#{count} #{association.klass.model_name.human(count: count)}"
-      
+
       # Se não tem itens, mostra apenas o texto
       if count == 0
         plain label_text
         return
       end
-      
+
       modal_id = "modal-#{attribute_name}-#{@item_id}"
-      
+
       # Link para abrir o modal
       button(
         type: "button",
@@ -41,11 +41,11 @@ module Components::Attributes
           ul(class: "divide-y divide-gray-200 dark:divide-gray-700") do
             value.each do |item|
               li(class: "py-2") do
-                display_value = item.try(:name) || 
-                               item.try(:title) || 
+                display_value = item.try(:name) ||
+                               item.try(:title) ||
                                item.try(:email) ||
                                "#{association.klass.model_name.human} ##{item.id}"
-                
+
                 a(
                   href: "/#{association.klass.model_name.route_key}/#{item.id}",
                   class: "text-indigo-600 hover:text-indigo-800 underline"
