@@ -84,6 +84,11 @@ class Views::Base < Components::Base
       resource_routes.each do |route|
         nav.item(route[:path]) { route[:name] }
       end
+      
+      # Link para showcase apenas em development
+      if Rails.env.development?
+        nav.item("/showcase") { "🎨 Showcase" }
+      end
     end
   end
 

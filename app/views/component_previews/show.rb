@@ -36,7 +36,7 @@ module Views
               h3(class: "text-sm font-semibold text-gray-700") { "Preview" }
             end
             div(class: "p-8 bg-gradient-to-br from-gray-50 to-gray-100") do
-              div(class: "inline-block border-2 border-dashed border-blue-300 rounded-lg bg-white shadow-sm") do
+              div(class: "inline-block border-2 border-dashed border-blue-300 rounded-lg bg-white shadow-sm w-full") do
                 render @selected_preview[:block].call
               end
             end
