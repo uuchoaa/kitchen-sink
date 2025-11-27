@@ -46,6 +46,7 @@ class Components::Form::Section < Components::Base
   # Text input field
   def text(name, label:, span: 4, placeholder: nil, description: nil, error: nil, disabled: false, **attributes)
     field_id = @form.field_id(name)
+    error = error_for(name, error)
 
     field(label: label, span: span, description: description, error: error, field_id: field_id) do
       input(
@@ -65,6 +66,7 @@ class Components::Form::Section < Components::Base
   # Email input field
   def email(name, label:, span: 4, placeholder: nil, description: nil, error: nil, disabled: false, **attributes)
     field_id = @form.field_id(name)
+    error = error_for(name, error)
 
     field(label: label, span: span, description: description, error: error, field_id: field_id) do
       input(
@@ -85,6 +87,7 @@ class Components::Form::Section < Components::Base
   def textarea(name, label:, span: :full, rows: 3, placeholder: nil, description: nil, error: nil, disabled: false, **attributes)
     field_id = @form.field_id(name)
     value = @form.field_value(name, attributes.delete(:value))
+    error = error_for(name, error)
 
     field(label: label, span: span, description: description, error: error, field_id: field_id) do
       super(
@@ -102,10 +105,22 @@ class Components::Form::Section < Components::Base
     end
   end
 
+  private
+
+  def error_for(name, explicit_error)
+    return explicit_error unless explicit_error.nil?
+    return nil unless @form.respond_to?(:field_error)
+
+    @form.field_error(name)
+  end
+
+  public
+
   # Select field (integrates with existing Components::Select)
   def select(name, label:, options:, span: 3, description: nil, error: nil, disabled: false, **attributes)
     field_id = @form.field_id(name)
     selected_value = @form.field_value(name, attributes.delete(:selected))
+    error = error_for(name, error)
 
     # Add ARIA attributes manually since input_aria_attributes is private
     aria_attrs = {}
