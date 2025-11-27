@@ -33,7 +33,7 @@ module Views
                     span: 3,
                     options: Deal.stages.keys.map { |s| { value: s, label: Deal.human_attribute_name("stage.#{s}") } }
 
-                  section.textarea :description,
+                  section.text :description,
                     label: "Descrição",
                     span: :full,
                     rows: 4,

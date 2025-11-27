@@ -38,6 +38,56 @@ class Components::Form < Components::Base
     render Components::Form::ActionButtons.new(form: self, &block)
   end
 
+  # Direct field methods (without section)
+  def text(name, label:, placeholder: nil, **attributes)
+    input(
+      type: "text",
+      name: field_name(name),
+      id: field_id(name),
+      value: field_value(name, attributes.delete(:value)),
+      placeholder: placeholder,
+      class: input_classes,
+      **attributes
+    )
+  end
+
+  def email(name, label:, placeholder: nil, **attributes)
+    input(
+      type: "email",
+      name: field_name(name),
+      id: field_id(name),
+      value: field_value(name, attributes.delete(:value)),
+      placeholder: placeholder,
+      class: input_classes,
+      **attributes
+    )
+  end
+
+  def textarea(name, label:, rows: 3, placeholder: nil, **attributes)
+    value = field_value(name, attributes.delete(:value))
+    
+    super(
+      name: field_name(name),
+      id: field_id(name),
+      rows: rows,
+      placeholder: placeholder,
+      class: input_classes,
+      **attributes
+    ) do
+      plain value if value
+    end
+  end
+
+  def select(name, label:, options:, **attributes)
+    render Components::Select.new(
+      name: field_name(name),
+      id: field_id(name),
+      options: options,
+      selected: field_value(name, attributes.delete(:selected)),
+      **attributes
+    )
+  end
+
   # Helper methods for field name/id generation (used by nested components)
   def field_name(name)
     return name.to_s unless @model
@@ -87,5 +137,9 @@ class Components::Form < Components::Base
 
   def spoofed_method?
     !%i[get post].include?(@method)
+  end
+
+  def input_classes
+    "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
   end
 end
