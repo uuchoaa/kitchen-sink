@@ -33,43 +33,24 @@ class Components::FormTest < ActiveSupport::TestCase
     assert_match(/Name/, output)
   end
 
-  test "generates field names without model" do
+  test "generates field names" do
     form = Components::Form.new(action: "/test")
 
     assert_equal "email", form.field_name(:email)
+    assert_equal "first_name", form.field_name(:first_name)
   end
 
-  test "generates field names with model" do
-    deal = deals(:one)
-    form = Components::Form.new(action: "/deals", model: deal)
-
-    assert_equal "deal[description]", form.field_name(:description)
-  end
-
-  test "generates field IDs without model" do
+  test "generates field IDs" do
     form = Components::Form.new(action: "/test")
 
     assert_equal "email", form.field_id(:email)
+    assert_equal "first-name", form.field_id(:first_name)
   end
 
-  test "generates field IDs with model" do
-    deal = deals(:one)
-    form = Components::Form.new(action: "/deals", model: deal)
+  test "returns explicit field values" do
+    form = Components::Form.new(action: "/test")
 
-    assert_equal "deal_description", form.field_id(:description)
-  end
-
-  test "gets field value from model" do
-    deal = deals(:one)
-    form = Components::Form.new(action: "/deals", model: deal)
-
-    assert_equal deal.description, form.field_value(:description, nil)
-  end
-
-  test "prefers explicit value over model value" do
-    deal = deals(:one)
-    form = Components::Form.new(action: "/deals", model: deal)
-
-    assert_equal "explicit", form.field_value(:description, "explicit")
+    assert_equal "test@example.com", form.field_value(:email, "test@example.com")
+    assert_nil form.field_value(:email, nil)
   end
 end

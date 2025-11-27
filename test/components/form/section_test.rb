@@ -93,16 +93,15 @@ class Components::Form::SectionTest < ActiveSupport::TestCase
     assert_match(/Canada/, output)
   end
 
-  test "uses model binding for field values" do
-    deal = deals(:one)
-    form = Components::Form.new(action: "/deals", model: deal)
+  test "renders field with explicit value" do
+    form = Components::Form.new(action: "/test")
 
     output = Components::Form::Section.new(form: form).call do |section|
-      section.text :description, label: "Description"
+      section.text :description, label: "Description", value: "Test description"
     end
 
-    assert_match(/name="deal\[description\]"/, output)
-    assert_match(/id="deal_description"/, output)
-    assert_match(/value="#{deal.description}"/, output)
+    assert_match(/name="description"/, output)
+    assert_match(/id="description"/, output)
+    assert_match(/value="Test description"/, output)
   end
 end

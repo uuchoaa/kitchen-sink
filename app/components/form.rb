@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
 class Components::Form < Components::Base
-  attr_reader :action, :method, :model
+  attr_reader :action, :method
 
-  def initialize(action: nil, method: :post, model: nil, **attributes)
+  def initialize(action: nil, method: :post, **attributes)
     @action = action
     @method = method
-    @model = model
     @attributes = attributes
   end
 
@@ -65,7 +64,7 @@ class Components::Form < Components::Base
 
   def textarea(name, label:, rows: 3, placeholder: nil, **attributes)
     value = field_value(name, attributes.delete(:value))
-    
+
     super(
       name: field_name(name),
       id: field_id(name),
@@ -90,26 +89,15 @@ class Components::Form < Components::Base
 
   # Helper methods for field name/id generation (used by nested components)
   def field_name(name)
-    return name.to_s unless @model
-
-    model_name = @model.class.model_name.param_key
-    "#{model_name}[#{name}]"
+    name.to_s
   end
 
   def field_id(name)
-    return name.to_s.tr("_", "-") unless @model
-
-    model_name = @model.class.model_name.param_key
-    "#{model_name}_#{name}"
+    name.to_s.tr("_", "-")
   end
 
   def field_value(name, explicit_value)
-    return explicit_value if explicit_value
-    return nil unless @model
-
-    @model.public_send(name) if @model.respond_to?(name)
-  rescue NoMethodError
-    nil
+    explicit_value
   end
 
   private
