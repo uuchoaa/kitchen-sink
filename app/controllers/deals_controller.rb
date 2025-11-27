@@ -43,7 +43,10 @@ class DealsController < ApplicationController
         format.html { redirect_to @deal, notice: "Deal was successfully created." }
         format.json { render :show, status: :created, location: @deal }
       else
-        format.html { render :new, status: :unprocessable_entity }
+        @view = Views::Deals::New.new
+        @view.current_path = request.path
+        @view.deal = @deal
+        format.html { render @view, status: :unprocessable_entity }
         format.json { render json: @deal.errors, status: :unprocessable_entity }
       end
     end

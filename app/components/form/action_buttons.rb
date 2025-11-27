@@ -20,7 +20,7 @@ class Components::Form::ActionButtons < Components::Base
   # Cancel/reset button
   def cancel(label = nil, href: nil, **attributes)
     label ||= I18n.t("helpers.submit.cancel", default: "Cancelar")
-    
+
     if href
       a(
         href: href,
@@ -40,7 +40,7 @@ class Components::Form::ActionButtons < Components::Base
   # Submit button
   def submit(label = nil, **attributes)
     label ||= I18n.t("helpers.submit.submit", default: "Salvar")
-    
+
     button(
       type: "submit",
       class: "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500 cursor-pointer",

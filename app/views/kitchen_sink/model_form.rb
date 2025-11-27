@@ -63,7 +63,7 @@ module Views
             plain <<~CODE
               # Sem bloco = botões padrão (Cancelar + Salvar)
               form.action_buttons
-              
+
               # Com bloco = customização total
               form.action_buttons do |actions|
                 actions.cancel "Voltar"
