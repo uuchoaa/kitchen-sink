@@ -82,4 +82,13 @@ pt-BR:
       cancel: "Cancelar"
       create: "Criar %{model}"
       update: "Atualizar %{model}"
+  crud:
+    create:
+      success: "%{model} criado com sucesso!"
+      error: "Não foi possível criar %{model}."
+    update:
+      success: "%{model} atualizado com sucesso!"
+      error: "Não foi possível atualizar %{model}."
+    destroy:
+      success: "%{model} removido com sucesso!"
   hello: "Olá mundo"
