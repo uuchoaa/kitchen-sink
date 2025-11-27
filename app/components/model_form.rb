@@ -5,11 +5,7 @@ class Components::ModelForm < Components::Form
 
   def initialize(model:, action: nil, method: nil, **attributes)
     @model = model
-
-    # Determina action baseado no model se não fornecido
-    if action.nil?
-      action = infer_action_path
-    end
+    @explicit_action = action
 
     # Determina method baseado no model se não fornecido
     if method.nil?
@@ -19,28 +15,84 @@ class Components::ModelForm < Components::Form
     super(action: action, method: method, **attributes)
   end
 
+  def view_template(&block)
+    # Infere o action path durante o render, quando os helpers estão disponíveis
+    @action = @explicit_action || infer_action_path
+
+    # Cria uma section implícita para agrupar os campos
+    form(action: @action, method: form_method, **@attributes) do
+      render_method_field if spoofed_method?
+      render_csrf_token
+
+      # Container for sections
+      div(class: "space-y-12") do
+        # Section única para todos os campos
+        div(class: "border-b border-gray-900/10 pb-12 dark:border-white/10") do
+          div(class: "mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6") do
+            yield self if block_given?
+          end
+        end
+      end
+    end
+  end
+
   # API simplificada: detecta automaticamente o tipo de campo
+  # Renderiza o campo diretamente no grid (sem section wrapper)
   def attribute(name, **options)
     type = detect_field_type(name)
     label = options.delete(:label) || @model.class.human_attribute_name(name)
     error = field_error(name)
+    span = options.delete(:span) || (type == :textarea ? :full : 3)
 
-    case type
-    when :text, :string
-      section do |s|
-        s.text(name, label: label, error: error, **options)
-      end
-    when :email
-      section do |s|
-        s.email(name, label: label, error: error, **options)
-      end
-    when :textarea
-      section do |s|
-        s.textarea(name, label: label, error: error, **options)
-      end
-    when :select, :belongs_to, :enum
-      section do |s|
-        s.select(name, label: label, options: select_options(name), error: error, **options)
+    # Renderiza o campo diretamente usando Components::Form::Field
+    render Components::Form::Field.new(
+      label: label,
+      span: span,
+      error: error,
+      field_id: field_id(name)
+    ) do
+      case type
+      when :text, :string
+        input(
+          type: "text",
+          name: field_name(name),
+          id: field_id(name),
+          value: field_value(name, options.delete(:value)),
+          class: send(:input_classes, error: error),
+          **send(:input_aria_attributes, name, error),
+          **options
+        )
+      when :email
+        input(
+          type: "email",
+          name: field_name(name),
+          id: field_id(name),
+          value: field_value(name, options.delete(:value)),
+          class: send(:input_classes, error: error),
+          **send(:input_aria_attributes, name, error),
+          **options
+        )
+      when :textarea
+        value = field_value(name, options.delete(:value))
+        textarea(
+          name: field_name(name),
+          id: field_id(name),
+          rows: options.delete(:rows) || 3,
+          class: send(:input_classes, error: error),
+          **send(:input_aria_attributes, name, error),
+          **options
+        ) do
+          plain value if value
+        end
+      when :select, :belongs_to, :enum
+        render Components::Select.new(
+          name: field_name(name),
+          id: field_id(name),
+          options: select_options(name),
+          selected: field_value(name, options.delete(:selected)),
+          error: error,
+          **options
+        )
       end
     end
   end
@@ -77,17 +129,13 @@ class Components::ModelForm < Components::Form
   end
 
   def infer_action_path
-    # Tenta usar os helpers de rotas do Rails
-    # Para new record: plural_path (ex: deals_path)
-    # Para persisted: singular_path (ex: deal_path(@deal))
-    route_key = @model.model_name.route_key
-
+    # Usa polimorphic_path que funciona com qualquer model
+    # Para new record: /deals (POST)
+    # Para persisted: /deals/1 (PATCH)
     if @model.persisted?
-      # Rota para update: /deals/1
-      public_send("#{@model.model_name.singular_route_key}_path", @model)
+      helpers.url_for(@model)
     else
-      # Rota para create: /deals
-      public_send("#{route_key}_path")
+      helpers.url_for([ @model.class ])
     end
   rescue NoMethodError => e
     # Se não conseguir inferir, retorna nil e deixa o form sem action
