@@ -44,52 +44,57 @@ class Components::ModelForm < Components::Form
   # Renderiza o campo diretamente no grid (sem section wrapper)
   def attribute(name, **options)
     type = detect_field_type(name)
-    label = options.delete(:label) || @model.class.human_attribute_name(name)
+    label = options.delete(:label)
+    label = @model.class.human_attribute_name(name) if label.nil?
     error = field_error(name)
     value = field_value(name, options.delete(:value))
-    span = options.delete(:span)
+
+    # Opções comuns
+    common_options = {
+      name: field_name(name),
+      id: field_id(name),
+      value: value,
+      label: label,
+      error: error,
+      span: options.delete(:span),
+      placeholder: options.delete(:placeholder),
+      disabled: options.delete(:disabled),
+      readonly: options.delete(:readonly),
+      required: options.delete(:required),
+      hint: options.delete(:hint),
+      autofocus: options.delete(:autofocus),
+      autocomplete: options.delete(:autocomplete)
+    }
 
     # Delega para o componente Input apropriado
     case type
-    when :text, :string
-      render Components::Inputs::Text.new(
-        name: field_name(name),
-        id: field_id(name),
-        value: value,
-        label: label,
-        error: error,
-        span: span || 3,
-        **options
-      )
     when :email
       render Components::Inputs::Email.new(
-        name: field_name(name),
-        id: field_id(name),
-        value: value,
-        label: label,
-        error: error,
-        span: span || 3,
+        span: common_options[:span] || 3,
+        **common_options.except(:span),
         **options
       )
     when :textarea
       render Components::Inputs::Textarea.new(
-        name: field_name(name),
-        id: field_id(name),
-        value: value,
-        label: label,
-        error: error,
-        span: span || :full,
+        span: common_options[:span] || :full,
+        rows: options.delete(:rows),
+        **common_options.except(:span),
         **options
       )
     when :select, :belongs_to, :enum
       render Components::Inputs::Select.new(
-        name: field_name(name),
-        id: field_id(name),
-        options: select_options(name),
+        span: common_options[:span] || 3,
+        options: options.delete(:options) || select_options(name),
         selected: value,
-        label: label,
-        error: error,
-        span: span || 3,
+        include_blank: options.delete(:include_blank) || false,
+        prompt: options.delete(:prompt),
+        **common_options.except(:span, :value),
+        **options
+      )
+    else # :text ou desconhecido
+      render Components::Inputs::Text.new(
+        span: common_options[:span] || 3,
+        **common_options.except(:span),
         **options
       )
     end

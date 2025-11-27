@@ -2,9 +2,11 @@
 
 module Components::Inputs
   class Textarea < Base
-    def initialize(name:, id: nil, value: nil, label: nil, error: nil, span: :full, rows: 3, **attributes)
+    attr_reader :rows
+
+    def initialize(rows: 3, span: :full, **args)
       @rows = rows
-      super(name: name, id: id, value: value, label: label, error: error, span: span, **attributes)
+      super(span: span, **args)
     end
 
     def view_template
@@ -12,14 +14,17 @@ module Components::Inputs
         label: @label,
         span: @span,
         error: @error,
-        field_id: @id
+        field_id: @id,
+        required: @required,
+        hint: @hint
       ) do
         textarea(
           name: @name,
           id: @id,
           rows: @rows,
-          class: input_classes(error: @error),
+          class: input_classes(error: @error, disabled: @disabled),
           **input_aria_attributes,
+          **common_input_attrs,
           **@attributes
         ) do
           plain @value if @value

@@ -7,15 +7,18 @@ module Components::Inputs
         label: @label,
         span: @span,
         error: @error,
-        field_id: @id
+        field_id: @id,
+        required: @required,
+        hint: @hint
       ) do
         input(
           type: "text",
           name: @name,
           id: @id,
           value: @value,
-          class: input_classes(error: @error),
+          class: input_classes(error: @error, disabled: @disabled),
           **input_aria_attributes,
+          **common_input_attrs,
           **@attributes
         )
       end

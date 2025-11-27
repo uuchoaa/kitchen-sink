@@ -1,24 +1,29 @@
 # frozen_string_literal: true
 
 class Components::Form::Field < Components::Base
-  def initialize(label: nil, span: 4, description: nil, error: nil, field_id: nil, **attributes)
+  def initialize(label: nil, span: 4, description: nil, error: nil, field_id: nil, required: false, hint: nil, **attributes)
     @label = label
     @span = span
     @description = description
     @error = error
     @field_id = field_id
+    @required = required
+    @hint = hint || description
     @attributes = attributes
   end
 
   def view_template(&block)
     div(class: span_class, **@attributes) do
       # Label
-      if @label
+      if @label && @label != false
         label(
           for: @field_id,
           class: "block text-sm/6 font-medium text-gray-900 dark:text-white"
         ) do
           plain @label
+          if @required
+            span(class: "text-red-500 ml-1") { "*" }
+          end
         end
       end
 
@@ -51,10 +56,10 @@ class Components::Form::Field < Components::Base
         end
       end
 
-      # Description/help text (only if no error)
-      if @description && !@error
-        p(class: "mt-3 text-sm/6 text-gray-600 dark:text-gray-400") do
-          plain @description
+      # Hint/description text (only if no error)
+      if @hint && !@error
+        p(class: "mt-2 text-sm text-gray-500 dark:text-gray-400") do
+          plain @hint
         end
       end
     end

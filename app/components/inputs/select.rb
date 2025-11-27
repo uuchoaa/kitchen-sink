@@ -2,10 +2,13 @@
 
 module Components::Inputs
   class Select < Base
-    def initialize(name:, id: nil, options:, selected: nil, label: nil, error: nil, span: 3, **attributes)
+    attr_reader :options, :include_blank, :prompt
+
+    def initialize(options:, selected: nil, include_blank: false, prompt: nil, **args)
       @options = options
-      @selected = selected
-      super(name: name, id: id, value: selected, label: label, error: error, span: span, **attributes)
+      @include_blank = include_blank
+      @prompt = prompt
+      super(value: selected, **args)
     end
 
     def view_template
@@ -13,17 +16,34 @@ module Components::Inputs
         label: @label,
         span: @span,
         error: @error,
-        field_id: @id
+        field_id: @id,
+        required: @required,
+        hint: @hint
       ) do
         render Components::Select.new(
           name: @name,
           id: @id,
-          options: @options,
-          selected: @selected,
-          error: @error,
+          options: formatted_options,
+          selected: @value,
+          error: @error.present?,
+          disabled: @disabled,
           **@attributes
         )
       end
+    end
+
+    private
+
+    def formatted_options
+      opts = []
+
+      # Adiciona opção em branco se solicitado
+      if @include_blank
+        opts << { value: "", label: @prompt || "Selecione..." }
+      end
+
+      # Adiciona as opções reais
+      opts + @options
     end
   end
 end

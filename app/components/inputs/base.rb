@@ -2,15 +2,38 @@
 
 module Components::Inputs
   class Base < Components::Base
-    attr_reader :name, :id, :value, :label, :error, :span
+    attr_reader :name, :id, :value, :label, :error, :span, :placeholder,
+                :disabled, :readonly, :required, :hint, :autofocus, :autocomplete
 
-    def initialize(name:, id: nil, value: nil, label: nil, error: nil, span: 3, **attributes)
+    def initialize(
+      name:,
+      id: nil,
+      value: nil,
+      label: nil,
+      error: nil,
+      span: 3,
+      placeholder: nil,
+      disabled: false,
+      readonly: false,
+      required: false,
+      hint: nil,
+      autofocus: false,
+      autocomplete: nil,
+      **attributes
+    )
       @name = name
       @id = id || name.to_s.gsub(/[\[\]]/, "_").gsub(/__+/, "_").gsub(/^_|_$/, "")
       @value = value
       @label = label
       @error = error
       @span = span
+      @placeholder = placeholder
+      @disabled = disabled
+      @readonly = readonly
+      @required = required
+      @hint = hint
+      @autofocus = autofocus
+      @autocomplete = autocomplete
       @attributes = attributes
     end
 
@@ -39,6 +62,17 @@ module Components::Inputs
         "aria-invalid": "true",
         "aria-describedby": "#{@id}-error"
       }
+    end
+
+    def common_input_attrs
+      {
+        placeholder: @placeholder,
+        disabled: @disabled,
+        readonly: @readonly,
+        required: @required,
+        autofocus: @autofocus,
+        autocomplete: @autocomplete
+      }.compact
     end
   end
 end
