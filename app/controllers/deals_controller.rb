@@ -24,6 +24,12 @@ class DealsController < ApplicationController
   # GET /deals/new
   def new
     @deal = Deal.new
+    @view = Views::Deals::New.new
+    @view.current_path = request.path
+    @view.deal = @deal
+    @view.agencies = Agency.order(:name)
+    @view.recruiters = Recruter.order(:name)
+    render @view
   end
 
   # GET /deals/1/edit
@@ -91,6 +97,6 @@ class DealsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def deal_params
-      params.expect(deal: [ :agency_id, :recruter_id, :stage ])
+      params.expect(deal: [ :agency_id, :recruter_id, :stage, :description ])
     end
 end
