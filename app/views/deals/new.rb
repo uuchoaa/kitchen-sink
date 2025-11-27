@@ -15,10 +15,12 @@ module Views
             div(class: "px-4 py-6 sm:p-8") do
               # Nova API simplificada usando attribute
               render Components::ModelForm.new(model: deal) do |form|
-                form.attribute :agency
-                form.attribute :recruter
-                form.attribute :stage
-                form.attribute :description
+                form.attributes do
+                  form.attribute :agency
+                  form.attribute :recruter
+                  form.attribute :stage
+                  form.attribute :description
+                end
 
                 form.action_buttons do |actions|
                   actions.cancel "Cancelar"

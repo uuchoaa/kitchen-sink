@@ -26,12 +26,16 @@ class Components::ModelForm < Components::Form
 
       # Container for sections
       div(class: "space-y-12") do
-        # Section única para todos os campos
-        div(class: "border-b border-gray-900/10 pb-12 dark:border-white/10") do
-          div(class: "mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6") do
-            yield self if block_given?
-          end
-        end
+        yield self if block_given?
+      end
+    end
+  end
+
+  # Wrapper para agrupar attributes em uma section com grid
+  def attributes(&block)
+    div(class: "border-b border-gray-900/10 pb-12 dark:border-white/10") do
+      div(class: "mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6") do
+        yield self if block_given?
       end
     end
   end
@@ -42,58 +46,52 @@ class Components::ModelForm < Components::Form
     type = detect_field_type(name)
     label = options.delete(:label) || @model.class.human_attribute_name(name)
     error = field_error(name)
-    span = options.delete(:span) || (type == :textarea ? :full : 3)
+    value = field_value(name, options.delete(:value))
+    span = options.delete(:span)
 
-    # Renderiza o campo diretamente usando Components::Form::Field
-    render Components::Form::Field.new(
-      label: label,
-      span: span,
-      error: error,
-      field_id: field_id(name)
-    ) do
-      case type
-      when :text, :string
-        input(
-          type: "text",
-          name: field_name(name),
-          id: field_id(name),
-          value: field_value(name, options.delete(:value)),
-          class: send(:input_classes, error: error),
-          **send(:input_aria_attributes, name, error),
-          **options
-        )
-      when :email
-        input(
-          type: "email",
-          name: field_name(name),
-          id: field_id(name),
-          value: field_value(name, options.delete(:value)),
-          class: send(:input_classes, error: error),
-          **send(:input_aria_attributes, name, error),
-          **options
-        )
-      when :textarea
-        value = field_value(name, options.delete(:value))
-        textarea(
-          name: field_name(name),
-          id: field_id(name),
-          rows: options.delete(:rows) || 3,
-          class: send(:input_classes, error: error),
-          **send(:input_aria_attributes, name, error),
-          **options
-        ) do
-          plain value if value
-        end
-      when :select, :belongs_to, :enum
-        render Components::Select.new(
-          name: field_name(name),
-          id: field_id(name),
-          options: select_options(name),
-          selected: field_value(name, options.delete(:selected)),
-          error: error,
-          **options
-        )
-      end
+    # Delega para o componente Input apropriado
+    case type
+    when :text, :string
+      render Components::Inputs::Text.new(
+        name: field_name(name),
+        id: field_id(name),
+        value: value,
+        label: label,
+        error: error,
+        span: span || 3,
+        **options
+      )
+    when :email
+      render Components::Inputs::Email.new(
+        name: field_name(name),
+        id: field_id(name),
+        value: value,
+        label: label,
+        error: error,
+        span: span || 3,
+        **options
+      )
+    when :textarea
+      render Components::Inputs::Textarea.new(
+        name: field_name(name),
+        id: field_id(name),
+        value: value,
+        label: label,
+        error: error,
+        span: span || :full,
+        **options
+      )
+    when :select, :belongs_to, :enum
+      render Components::Inputs::Select.new(
+        name: field_name(name),
+        id: field_id(name),
+        options: select_options(name),
+        selected: value,
+        label: label,
+        error: error,
+        span: span || 3,
+        **options
+      )
     end
   end
 
