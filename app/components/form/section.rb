@@ -105,15 +105,24 @@ class Components::Form::Section < Components::Base
   # Select field (integrates with existing Components::Select)
   def select(name, label:, options:, span: 3, description: nil, error: nil, disabled: false, **attributes)
     field_id = @form.field_id(name)
+    selected_value = @form.field_value(name, attributes.delete(:selected))
+
+    # Add ARIA attributes manually since input_aria_attributes is private
+    aria_attrs = {}
+    if error
+      aria_attrs[:"aria-invalid"] = "true"
+      aria_attrs[:"aria-describedby"] = "#{field_id}-error"
+    end
 
     field(label: label, span: span, description: description, error: error, field_id: field_id) do
       render Components::Select.new(
         name: @form.field_name(name),
         id: field_id,
         options: options,
-        selected: @form.field_value(name, attributes.delete(:selected)),
+        selected: selected_value,
         disabled: disabled,
         error: error,
+        **aria_attrs,
         **attributes
       )
     end

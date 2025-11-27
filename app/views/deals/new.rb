@@ -80,6 +80,27 @@ module Views
                     placeholder: "Digite algo...",
                     description: "Esta é uma mensagem de ajuda para o usuário"
 
+                  section.textarea :example_textarea_error,
+                    label: "Textarea com erro",
+                    span: :full,
+                    rows: 3,
+                    value: "Texto com problema",
+                    error: "Este texto contém erros"
+
+                  section.textarea :example_textarea_disabled,
+                    label: "Textarea desabilitado",
+                    span: :full,
+                    rows: 3,
+                    value: "Este campo não pode ser editado",
+                    disabled: true
+
+                  section.textarea :example_textarea_hint,
+                    label: "Textarea com dica",
+                    span: :full,
+                    rows: 3,
+                    placeholder: "Digite uma descrição detalhada...",
+                    description: "Forneça o máximo de detalhes possível"
+
                   section.field(label: "Campo customizado", span: :full) do
                     div(class: "flex gap-4") do
                       input(
