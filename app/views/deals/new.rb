@@ -26,7 +26,9 @@ module Views
                   section.email :contact_email,
                     label: "Email de contato",
                     span: 4,
-                    placeholder: "contato@example.com"
+                    placeholder: "you@example.com",
+                    value: "adamwathan",
+                    error: "Not a valid email address."
 
                   section.select :agency_id,
                     label: "Agência",
@@ -38,7 +40,8 @@ module Views
                     label: "Recrutador",
                     span: 3,
                     options: recruiters.map { |r| { value: r.id, label: r.name } },
-                    selected: deal.recruter_id
+                    selected: deal.recruter_id,
+                    disabled: true
 
                   section.select :stage,
                     label: "Estágio",
@@ -56,10 +59,28 @@ module Views
                 end
 
                 form.section(
-                  title: "Campos Customizados",
-                  description: "Exemplo de campo customizado com wrapper"
+                  title: "Estados dos Campos",
+                  description: "Exemplos de estados: error, disabled, description"
                 ) do |section|
-                  section.field(label: "Campo especial", span: :full) do
+                  section.text :example_error,
+                    label: "Campo com erro",
+                    span: 4,
+                    value: "valor inválido",
+                    error: "Este campo contém um erro"
+
+                  section.text :example_disabled,
+                    label: "Campo desabilitado",
+                    span: 4,
+                    value: "não editável",
+                    disabled: true
+
+                  section.text :example_hint,
+                    label: "Campo com dica",
+                    span: 4,
+                    placeholder: "Digite algo...",
+                    description: "Esta é uma mensagem de ajuda para o usuário"
+
+                  section.field(label: "Campo customizado", span: :full) do
                     div(class: "flex gap-4") do
                       input(
                         type: "text",

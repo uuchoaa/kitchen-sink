@@ -32,57 +32,69 @@ class Components::Form::Section < Components::Base
   end
 
   # Field wrapper with label and description support
-  def field(label: nil, span: 4, description: nil, **attributes, &block)
+  def field(label: nil, span: 4, description: nil, error: nil, **attributes, &block)
     render Components::Form::Field.new(
       label: label,
       span: span,
       description: description,
+      error: error,
       **attributes,
       &block
     )
   end
 
   # Text input field
-  def text(name, label:, span: 4, placeholder: nil, description: nil, **attributes)
-    field(label: label, span: span, description: description) do
+  def text(name, label:, span: 4, placeholder: nil, description: nil, error: nil, disabled: false, **attributes)
+    field_id = @form.field_id(name)
+
+    field(label: label, span: span, description: description, error: error, field_id: field_id) do
       input(
         type: "text",
         name: @form.field_name(name),
-        id: @form.field_id(name),
+        id: field_id,
         value: @form.field_value(name, attributes.delete(:value)),
         placeholder: placeholder,
-        class: input_classes,
+        disabled: disabled,
+        class: @form.send(:input_classes, error: error, disabled: disabled),
+        **@form.send(:input_aria_attributes, name, error),
         **attributes
       )
     end
   end
 
   # Email input field
-  def email(name, label:, span: 4, placeholder: nil, description: nil, **attributes)
-    field(label: label, span: span, description: description) do
+  def email(name, label:, span: 4, placeholder: nil, description: nil, error: nil, disabled: false, **attributes)
+    field_id = @form.field_id(name)
+
+    field(label: label, span: span, description: description, error: error, field_id: field_id) do
       input(
         type: "email",
         name: @form.field_name(name),
-        id: @form.field_id(name),
+        id: field_id,
         value: @form.field_value(name, attributes.delete(:value)),
         placeholder: placeholder,
-        class: input_classes,
+        disabled: disabled,
+        class: @form.send(:input_classes, error: error, disabled: disabled),
+        **@form.send(:input_aria_attributes, name, error),
         **attributes
       )
     end
   end
 
   # Textarea field
-  def textarea(name, label:, span: :full, rows: 3, placeholder: nil, description: nil, **attributes)
+  def textarea(name, label:, span: :full, rows: 3, placeholder: nil, description: nil, error: nil, disabled: false, **attributes)
+    field_id = @form.field_id(name)
     value = @form.field_value(name, attributes.delete(:value))
 
-    field(label: label, span: span, description: description) do
+    field(label: label, span: span, description: description, error: error, field_id: field_id) do
       super(
         name: @form.field_name(name),
-        id: @form.field_id(name),
+        id: field_id,
         rows: rows,
         placeholder: placeholder,
-        class: input_classes,
+        disabled: disabled,
+        class: @form.send(:input_classes, error: error, disabled: disabled),
+        **@form.send(:input_aria_attributes, name, error),
         **attributes
       ) do
         plain value if value
@@ -91,21 +103,19 @@ class Components::Form::Section < Components::Base
   end
 
   # Select field (integrates with existing Components::Select)
-  def select(name, label:, options:, span: 3, description: nil, **attributes)
-    field(label: label, span: span, description: description) do
+  def select(name, label:, options:, span: 3, description: nil, error: nil, disabled: false, **attributes)
+    field_id = @form.field_id(name)
+
+    field(label: label, span: span, description: description, error: error, field_id: field_id) do
       render Components::Select.new(
         name: @form.field_name(name),
-        id: @form.field_id(name),
+        id: field_id,
         options: options,
         selected: @form.field_value(name, attributes.delete(:selected)),
+        disabled: disabled,
+        error: error,
         **attributes
       )
     end
-  end
-
-  private
-
-  def input_classes
-    "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
   end
 end
