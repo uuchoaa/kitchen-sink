@@ -107,22 +107,9 @@
 
     console.log('Scraped data:', scrapedData);
 
-    // POST to Rails backend
-    const response = await fetch('http://localhost:3000/deals/find_or_create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(scrapedData)
-    });
-
-    const apiResponse = await response.json();
-
-    return {
-      scrapeData: scrapedData,
-      apiResponse: apiResponse,
-      success: true
-    };
+    // Retorna dados para o main process fazer o POST
+    return scrapedData;
+    
   } catch (error) {
     console.error('Scrape error:', error);
     return {

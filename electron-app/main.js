@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
 
 let linkedinWindow;   // W1
 let controlWindow;    // W2
@@ -15,13 +17,14 @@ function createWindows() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      partition: 'persist:linkedin' // Persiste cookies e sessão
     },
     title: 'LinkedIn - W1'
   });
 
-  // Por enquanto carrega HTML estático
-  linkedinWindow.loadFile('w1.html');
+  // Carrega LinkedIn
+  linkedinWindow.loadURL('https://www.linkedin.com/messaging/');
   linkedinWindow.webContents.openDevTools();
 
   // W2 - Control Panel (Rails App)
@@ -85,6 +88,28 @@ ipcMain.handle('scrape-w1', async () => {
     const scrapedData = await linkedinWindow.webContents.executeJavaScript(scraperScript);
     
     console.log('✅ Scrape completed:', scrapedData);
+    
+    // Agora o main process faz o POST para Rails
+    if (scrapedData && scrapedData.success) {
+      try {
+        const apiResponse = await sendToRails(scrapedData);
+        console.log('✅ Data sent to Rails:', apiResponse);
+        
+        return {
+          scrapeData: scrapedData,
+          apiResponse: apiResponse,
+          success: true
+        };
+      } catch (apiError) {
+        console.error('❌ Failed to send to Rails:', apiError);
+        return {
+          scrapeData: scrapedData,
+          apiError: apiError.message,
+          success: false
+        };
+      }
+    }
+    
     return scrapedData;
     
   } catch (error) {
@@ -95,4 +120,46 @@ ipcMain.handle('scrape-w1', async () => {
     };
   }
 });
+
+// Função para enviar dados ao Rails
+function sendToRails(data) {
+  return new Promise((resolve, reject) => {
+    const postData = JSON.stringify(data);
+    
+    const options = {
+      hostname: 'localhost',
+      port: 3000,
+      path: '/deals/find_or_create',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+    
+    const req = http.request(options, (res) => {
+      let responseData = '';
+      
+      res.on('data', (chunk) => {
+        responseData += chunk;
+      });
+      
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(responseData);
+          resolve(parsed);
+        } catch (e) {
+          resolve({ status: 'ok', raw: responseData });
+        }
+      });
+    });
+    
+    req.on('error', (error) => {
+      reject(error);
+    });
+    
+    req.write(postData);
+    req.end();
+  });
+}
 
