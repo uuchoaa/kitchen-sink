@@ -110,7 +110,8 @@
         // Chama o main process para injetar script em W1
         const result = await window.electronAPI.scrapeW1();
         
-        console.log('Scrape result:', result);
+        // console.log('Scrape result:', result);
+        alert('Scrape result: ' + JSON.stringify(result, null, 2));
         
         // Mostra resultado em W2
         const resultDiv = document.getElementById('result');

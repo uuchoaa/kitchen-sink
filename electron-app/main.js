@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 let linkedinWindow;   // W1
 let controlWindow;    // W2
@@ -74,33 +75,14 @@ ipcMain.handle('scrape-w1', async () => {
   try {
     console.log('📡 Received scrape request from W2');
     
+    // Lê o script de scraping do arquivo
+    const scraperScript = fs.readFileSync(
+      path.join(__dirname, 'scraper.js'),
+      'utf8'
+    );
+    
     // Injeta script em W1 para fazer o scrape
-    const scrapedData = await linkedinWindow.webContents.executeJavaScript(`
-      (() => {
-        // Seleciona todos os <p> e pega o segundo (índice 1)
-        const paragraphs = document.querySelectorAll('p');
-        const targetParagraph = paragraphs[1]; // Segunda tag <p>
-        
-        if (targetParagraph) {
-          const text = targetParagraph.innerText;
-          
-          // Faz o alert em W1
-          // alert('📝 Scraped text: ' + text);
-          
-          return {
-            success: true,
-            text: text,
-            totalParagraphs: paragraphs.length,
-            timestamp: new Date().toISOString()
-          };
-        } else {
-          return {
-            success: false,
-            error: 'Paragraph not found'
-          };
-        }
-      })();
-    `);
+    const scrapedData = await linkedinWindow.webContents.executeJavaScript(scraperScript);
     
     console.log('✅ Scrape completed:', scrapedData);
     return scrapedData;
