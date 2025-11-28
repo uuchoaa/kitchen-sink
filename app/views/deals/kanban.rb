@@ -14,8 +14,7 @@ module Views
 
       def render_page_header
         render Components::PageHeader.new(page_title) do |header|
-          header.action("📋 Lista", href: deals_path)
-          header.action("+ Novo", href: new_deal_path, primary: true)
+          header.action("Novo", href: new_deal_path, primary: true)
         end
       end
 
