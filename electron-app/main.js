@@ -22,7 +22,7 @@ function createWindows() {
 
   // Por enquanto carrega HTML estático
   linkedinWindow.loadFile('w1.html');
-  // linkedinWindow.webContents.openDevTools();
+  linkedinWindow.webContents.openDevTools();
 
   // W2 - Control Panel (Rails App)
   controlWindow = new BrowserWindow({
@@ -38,9 +38,9 @@ function createWindows() {
     title: 'Control Panel - W2'
   });
 
-  // Por enquanto carrega HTML estático
-  controlWindow.loadFile('w2.html');
-  // controlWindow.webContents.openDevTools();
+  // Carrega Rails app
+  controlWindow.loadURL('http://localhost:3000/electron/linkedin');
+  controlWindow.webContents.openDevTools();
 
   // Handlers para quando as janelas fecham
   linkedinWindow.on('closed', () => {

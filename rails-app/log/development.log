@@ -29244,3 +29244,39 @@ Processing by DealsController#index as HTML
 Completed 200 OK in 69ms (Views: 37.1ms | ActiveRecord: 19.4ms (4 queries, 0 cached) | GC: 6.0ms)
 
 
+Started GET "/" for ::1 at 2025-11-28 19:35:50 -0300
+  [1m[36mActiveRecord::SchemaMigration Load (1.8ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Resume'*/[0m
+Redirected to http://localhost:3000/deals
+↳ /Users/dev/workspace/resume/rails-app/config/routes.rb:31:in `block in <main>'
+Completed 301 Moved Permanently in 1ms
+
+
+Started GET "/deals" for ::1 at 2025-11-28 19:35:50 -0300
+Processing by DealsController#index as HTML
+  Rendering Views::Deals::Kanban
+  [1m[36mActiveRecord::SchemaMigration Load (0.4ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*action='index',application='Resume',controller='deals'*/[0m
+  ↳ app/views/base.rb:110:in `block in resource_routes'
+  [1m[36mDeal Load (0.8ms)[0m  [1m[34mSELECT "deals".* FROM "deals" /*action='index',application='Resume',controller='deals'*/[0m
+  ↳ app/views/deals/kanban.rb:34:in `group_by'
+  [1m[36mAgency Load (0.9ms)[0m  [1m[34mSELECT "agencies".* FROM "agencies" WHERE "agencies"."id" IN (1, 2) /*action='index',application='Resume',controller='deals'*/[0m
+  ↳ app/views/deals/kanban.rb:34:in `group_by'
+  [1m[36mRecruter Load (0.5ms)[0m  [1m[34mSELECT "recruters".* FROM "recruters" WHERE "recruters"."id" = 1 /*action='index',application='Resume',controller='deals'*/[0m
+  ↳ app/views/deals/kanban.rb:34:in `group_by'
+  Rendered Views::Deals::Kanban (Duration: 51.7ms | GC: 7.4ms)
+Completed 200 OK in 62ms (Views: 34.1ms | ActiveRecord: 18.6ms (4 queries, 0 cached) | GC: 7.4ms)
+
+
+Started GET "/electron/linkedin" for ::1 at 2025-11-28 19:35:54 -0300
+Processing by ElectronController#index as HTML
+  Rendering Views::Electron::Index
+  Rendered Views::Electron::Index (Duration: 3.9ms | GC: 0.7ms)
+Completed 200 OK in 8ms (Views: 4.7ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.7ms)
+
+
+Started GET "/electron/linkedin" for ::1 at 2025-11-28 19:36:40 -0300
+Processing by ElectronController#index as HTML
+  Rendering Views::Electron::Index
+  Rendered Views::Electron::Index (Duration: 2.1ms | GC: 0.1ms)
+Completed 200 OK in 4ms (Views: 2.9ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.1ms)
+
+
