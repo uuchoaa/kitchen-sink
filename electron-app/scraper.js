@@ -5,6 +5,35 @@
   try {
     const messages = [];
     
+    // Extrai informações da pessoa da conversa
+    const contactInfo = {};
+    
+    // Nome e link
+    const profileLink = document.querySelector('.msg-thread__link-to-profile');
+    if (profileLink) {
+      contactInfo.profileUrl = profileLink.getAttribute('href');
+      contactInfo.name = profileLink.getAttribute('title')?.replace("Open ", "")?.replace("'s profile", "") || null;
+    }
+    
+    // Nome alternativo e informações
+    const entityTitle = document.querySelector('.msg-entity-lockup__entity-title');
+    if (entityTitle && !contactInfo.name) {
+      contactInfo.name = entityTitle.textContent?.trim();
+    }
+    
+    // Título/cargo/empresa
+    const entityInfo = document.querySelector('.msg-entity-lockup__entity-info');
+    if (entityInfo) {
+      contactInfo.headline = entityInfo.textContent?.trim();
+    }
+    
+    // Foto de perfil (busca por imagens no cabeçalho da thread)
+    const profileImage = document.querySelector('.msg-thread img, .msg-entity-lockup img');
+    if (profileImage) {
+      contactInfo.photoUrl = profileImage.getAttribute('src');
+      contactInfo.photoAlt = profileImage.getAttribute('alt');
+    }
+    
     // Busca elementos de mensagem do LinkedIn
     const messageElements = document.querySelectorAll('.msg-s-message-list__event');
     
@@ -68,6 +97,7 @@
 
     const scrapedData = {
       success: true,
+      contact: contactInfo,
       totalMessages: messages.length,
       messages: messages,
       url: window.location.href,
