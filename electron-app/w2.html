@@ -79,7 +79,12 @@
     <div class="badge">Static HTML - Ready for Rails Integration</div>
     <div class="button-group">
       <button onclick="testElectronAPI()">Test Electron API</button>
-      <button onclick="simulateScrape()">Simulate Scrape</button>
+      <button onclick="scrapeW1()">🔍 Scrape W1</button>
+    </div>
+    
+    <div id="result" style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.2); border-radius: 10px; display: none;">
+      <h3>📊 Scrape Result:</h3>
+      <pre id="result-content" style="text-align: left; overflow-x: auto;"></pre>
     </div>
   </div>
 
@@ -93,9 +98,36 @@
       }
     }
     
-    function simulateScrape() {
-      alert('Scraping will be implemented here! 🚀');
-      console.log('Scrape button clicked');
+    async function scrapeW1() {
+      console.log('🔍 Scraping W1...');
+      
+      if (!window.electronAPI) {
+        alert('Electron API not found ❌');
+        return;
+      }
+      
+      try {
+        // Chama o main process para injetar script em W1
+        const result = await window.electronAPI.scrapeW1();
+        
+        console.log('Scrape result:', result);
+        
+        // Mostra resultado em W2
+        const resultDiv = document.getElementById('result');
+        const resultContent = document.getElementById('result-content');
+        
+        resultDiv.style.display = 'block';
+        resultContent.textContent = JSON.stringify(result, null, 2);
+        
+        if (result.success) {
+          alert('✅ Scrape successful! Check W1 for alert and W2 for details.');
+        } else {
+          alert('❌ Scrape failed: ' + result.error);
+        }
+      } catch (error) {
+        alert('❌ Error: ' + error.message);
+        console.error('Scrape error:', error);
+      }
     }
     
     console.log('W2 loaded successfully');

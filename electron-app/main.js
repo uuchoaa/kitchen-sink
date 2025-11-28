@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 let linkedinWindow;   // W1
@@ -21,7 +21,7 @@ function createWindows() {
 
   // Por enquanto carrega HTML estático
   linkedinWindow.loadFile('w1.html');
-  linkedinWindow.webContents.openDevTools();
+  // linkedinWindow.webContents.openDevTools();
 
   // W2 - Control Panel (Rails App)
   controlWindow = new BrowserWindow({
@@ -39,7 +39,7 @@ function createWindows() {
 
   // Por enquanto carrega HTML estático
   controlWindow.loadFile('w2.html');
-  controlWindow.webContents.openDevTools();
+  // controlWindow.webContents.openDevTools();
 
   // Handlers para quando as janelas fecham
   linkedinWindow.on('closed', () => {
@@ -66,6 +66,51 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+// IPC Handler: W2 solicita scraping de W1
+ipcMain.handle('scrape-w1', async () => {
+  try {
+    console.log('📡 Received scrape request from W2');
+    
+    // Injeta script em W1 para fazer o scrape
+    const scrapedData = await linkedinWindow.webContents.executeJavaScript(`
+      (() => {
+        // Seleciona todos os <p> e pega o segundo (índice 1)
+        const paragraphs = document.querySelectorAll('p');
+        const targetParagraph = paragraphs[1]; // Segunda tag <p>
+        
+        if (targetParagraph) {
+          const text = targetParagraph.innerText;
+          
+          // Faz o alert em W1
+          // alert('📝 Scraped text: ' + text);
+          
+          return {
+            success: true,
+            text: text,
+            totalParagraphs: paragraphs.length,
+            timestamp: new Date().toISOString()
+          };
+        } else {
+          return {
+            success: false,
+            error: 'Paragraph not found'
+          };
+        }
+      })();
+    `);
+    
+    console.log('✅ Scrape completed:', scrapedData);
+    return scrapedData;
+    
+  } catch (error) {
+    console.error('❌ Scrape error:', error);
+    return {
+      success: false,
+      error: error.message
+    };
   }
 });
 
