@@ -1,5 +1,5 @@
 class DealsController < CrudController
-  skip_before_action :verify_authenticity_token, only: [:find_or_create]
+  skip_before_action :verify_authenticity_token, only: [:find_or_create, :summarize]
 
   # GET /deals/kanban
   def index
@@ -37,6 +37,28 @@ class DealsController < CrudController
     }, status: :ok
   rescue StandardError => e
     puts "❌ Error processing scrape: #{e.message}"
+    render json: {
+      status: "error",
+      message: e.message
+    }, status: :unprocessable_entity
+  end
+
+  # POST /deals/summarize
+  def summarize
+    puts "🤖 Received summarize request"
+    
+    conversation_data = params.permit!.to_h.with_indifferent_access
+    
+    # Chama o LlamaSummarizer
+    summary = LlamaSummarizer.summarize(conversation_data)
+    
+    render json: {
+      status: "success",
+      summary: summary
+    }, status: :ok
+  rescue StandardError => e
+    puts "❌ Error generating summary: #{e.message}"
+    puts e.backtrace.first(5)
     render json: {
       status: "error",
       message: e.message

@@ -13,6 +13,13 @@ module Views
                 action: "click->scrapes#scrape"
               }
             )
+            header.action(
+              "Summarize Conversation",
+              data: {
+                action: "click->scrapes#summarize",
+                scrapes_target: "summarizeBtn"
+              }
+            )
           end
 
           div(id: "scrape-results", class: "mt-6") do

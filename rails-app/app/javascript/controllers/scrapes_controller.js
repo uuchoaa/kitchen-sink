@@ -2,6 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 import { createConsumer } from "@rails/actioncable"
 
 export default class extends Controller {
+  static targets = ["summarizeBtn"]
+  
   connect() {
     console.log("✅ Scrapes controller connected!")
     console.log("Controller element:", this.element)
@@ -24,6 +26,9 @@ export default class extends Controller {
         this.displayResults(data)
       }
     })
+    
+    // Store last scraped data
+    this.lastScrapedData = null
   }
 
   disconnect() {
@@ -42,8 +47,9 @@ export default class extends Controller {
         .then(result => {
           console.log("Scrape initiated:", result)
           
-          // Display results immediately from the scrape response
+          // Store for summarization and display
           if (result && result.scrapeData) {
+            this.lastScrapedData = result.scrapeData
             this.displayResults(result.scrapeData)
           }
         })
@@ -56,6 +62,44 @@ export default class extends Controller {
     }
   }
 
+  summarize(event) {
+    event.preventDefault()
+    console.log("🤖 Summarize button clicked")
+    
+    if (!this.lastScrapedData) {
+      alert("Please scrape a conversation first!")
+      return
+    }
+    
+    // Show loading state
+    const btn = event.currentTarget
+    const originalText = btn.textContent
+    btn.disabled = true
+    btn.textContent = "Summarizing..."
+    
+    // Send to Rails for summarization
+    fetch('/deals/summarize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(this.lastScrapedData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log("Summary received:", data)
+      this.displaySummary(data.summary)
+    })
+    .catch(error => {
+      console.error("Summarize error:", error)
+      this.showError("Failed to generate summary: " + error.message)
+    })
+    .finally(() => {
+      btn.disabled = false
+      btn.textContent = originalText
+    })
+  }
+
   displayResults(data) {
     const container = document.getElementById("results-container")
     const emptyState = document.getElementById("empty-state")
@@ -65,12 +109,26 @@ export default class extends Controller {
     emptyState.classList.add("hidden")
     container.classList.remove("hidden")
 
+    content.innerHTML = `
+      <div class="border-l-4 border-green-400 bg-green-50 p-4">
+        <code class="text-xs font-mono bg-white p-3 mt-2 whitespace-pre-wrap">${JSON.stringify(data, null, 2)}</code>
+      </div>
+    `
+  }
 
-      content.innerHTML = `
-        <div class="border-l-4 border-green-400 bg-green-50 p-4">
-          <code class="text-xs font-mono bg-white p-3 mt-2 whitespace-pre-wrap">${JSON.stringify(data, null, 2)}</code>
-        </div>
-      `
+  displaySummary(summary) {
+    const container = document.getElementById("results-container")
+    const content = document.getElementById("results-content")
+    
+    // Add summary to top of results
+    const summaryHtml = `
+      <div class="border-l-4 border-blue-400 bg-blue-50 p-4 mb-4">
+        <h4 class="text-sm font-medium text-blue-800 mb-2">🤖 AI Summary</h4>
+        <p class="text-sm text-blue-900 whitespace-pre-wrap">${this.escapeHtml(summary)}</p>
+      </div>
+    `
+    
+    content.insertAdjacentHTML('afterbegin', summaryHtml)
   }
 
   showError(message) {

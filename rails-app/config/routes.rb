@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   resources :deals do
     collection do
       post :find_or_create
+      post :summarize
     end
   end
   resources :agencies
