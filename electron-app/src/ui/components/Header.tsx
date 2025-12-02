@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useElectron } from '../context/ElectronContext';
 
 export function Header() {
-  const { url, source, scenario, navigateTo, navigateBack, navigateForward, reload, captureAndSavePage, captureToClipboard } = useElectron();
+  const { url, source, scenario, navigateTo, navigateBack, navigateForward, reload, captureAndSavePage, captureToClipboard, clearHistory, loadWelcome } = useElectron();
   const [urlInput, setUrlInput] = useState('');
 
   useEffect(() => {
@@ -27,6 +27,13 @@ export function Header() {
       
       {/* Navigation Controls */}
       <div className="mt-3 flex gap-2">
+        <button 
+          onClick={loadWelcome}
+          className="px-3 py-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded text-sm" 
+          title="Welcome Page"
+        >
+          🏠
+        </button>
         <button 
           onClick={navigateBack}
           className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm" 
@@ -76,6 +83,14 @@ export function Header() {
           title="Copy Screenshot to Clipboard"
         >
           📋
+        </button>
+        <div className="border-l border-gray-300 mx-1"></div>
+        <button 
+          onClick={clearHistory}
+          className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm" 
+          title="Clear History"
+        >
+          🗑️
         </button>
       </div>
       

@@ -31,6 +31,10 @@ interface ElectronContextValue extends ElectronState {
   captureAndSavePage: () => Promise<boolean>;
   captureToClipboard: () => Promise<boolean>;
   
+  // Navigation history
+  clearHistory: () => Promise<boolean>;
+  loadWelcome: () => Promise<boolean>;
+  
   // Modals
   selectedRecord: DataRecord | null;
   setSelectedRecord: (record: DataRecord | null) => void;
@@ -184,6 +188,37 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, []);
 
+  // Navigation history methods
+  const clearHistory = useCallback(async (): Promise<boolean> => {
+    if (!window.electronAPI) return false;
+    
+    if (!confirm('Limpar histórico de navegação?\n\nIsso irá mostrar a página de boas-vindas na próxima vez que abrir.')) {
+      return false;
+    }
+    
+    const result = await window.electronAPI.clearHistory();
+    if (result.success) {
+      console.log('History cleared, welcome page loaded');
+      return true;
+    }
+    
+    console.error('Clear history failed:', result.error);
+    return false;
+  }, []);
+
+  const loadWelcome = useCallback(async (): Promise<boolean> => {
+    if (!window.electronAPI) return false;
+    
+    const result = await window.electronAPI.loadWelcome();
+    if (result.success) {
+      console.log('Welcome page loaded');
+      return true;
+    }
+    
+    console.error('Load welcome failed:', result.error);
+    return false;
+  }, []);
+
   const value: ElectronContextValue = {
     ...state,
     navigateTo,
@@ -196,6 +231,8 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
     executeProcessor,
     captureAndSavePage,
     captureToClipboard,
+    clearHistory,
+    loadWelcome,
     selectedRecord,
     setSelectedRecord
   };

@@ -31,6 +31,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   captureAndSavePage: () => ipcRenderer.invoke('capture-and-save-page'),
   captureToClipboard: () => ipcRenderer.invoke('capture-to-clipboard'),
 
+  // Navigation history
+  clearHistory: () => ipcRenderer.invoke('clear-history'),
+  loadWelcome: () => ipcRenderer.invoke('load-welcome'),
+
   // Event listeners
   onInitData: (callback: (data: any) => void) => {
     ipcRenderer.on('init-data', (event, data) => callback(data));

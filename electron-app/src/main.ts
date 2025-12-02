@@ -11,6 +11,7 @@ import { SourceManager } from './core/source-manager';
 import { ScenarioDetector } from './core/scenario-detector';
 import { ActionExecutor } from './core/action-executor';
 import { DataStore } from './core/data-store';
+import { UrlStore } from './core/url-store';
 import { allSources } from './sources';
 import { allProcessors } from './processors';
 
@@ -22,6 +23,7 @@ const sourceManager = new SourceManager();
 const scenarioDetector = new ScenarioDetector();
 const actionExecutor = new ActionExecutor();
 const dataStore = new DataStore();
+let urlStore: UrlStore;
 
 // Register all sources
 allSources.forEach(source => sourceManager.register(source));
@@ -42,17 +44,27 @@ function createWindows() {
     title: 'Browser - W1'
   });
 
-  // Load initial URL (LinkedIn messaging)
-  // w1.loadURL('https://www.linkedin.com/messaging/');
-  w1.loadURL('https://bloco-de-pedra.web.app/lancar-presenca');
-  // w1.webContents.openDevTools();
+  // Load last visited URL or welcome page
+  const lastUrl = urlStore.getLastUrl();
+  if (lastUrl) {
+    console.log('Loading last visited URL:', lastUrl);
+    w1.loadURL(lastUrl);
+  } else {
+    console.log('No last URL, loading welcome page');
+    w1.loadFile(path.join(__dirname, 'ui/welcome.html'));
+  }
+  w1.webContents.openDevTools();
 
   // Listen to navigation changes in W1
   w1.webContents.on('did-navigate', () => {
+    const url = w1!.webContents.getURL();
+    urlStore.setLastUrl(url);
     notifyW2OfUrlChange();
   });
 
   w1.webContents.on('did-navigate-in-page', () => {
+    const url = w1!.webContents.getURL();
+    urlStore.setLastUrl(url);
     notifyW2OfUrlChange();
   });
 
@@ -124,6 +136,9 @@ function notifyW2OfUrlChange() {
 
 // App lifecycle
 app.whenReady().then(() => {
+  // Initialize URL store after app is ready
+  urlStore = new UrlStore();
+  
   createWindows();
   
   // Send initial data to W2 after it loads
@@ -316,57 +331,79 @@ ipcMain.handle('clear-records', async () => {
 });
 
 /**
+ * Clear navigation history and load welcome page
+ */
+ipcMain.handle('clear-history', async () => {
+  if (!w1) return { success: false, error: 'W1 not available' };
+  
+  try {
+    urlStore.clear();
+    await w1.loadFile(path.join(__dirname, 'ui/welcome.html'));
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+});
+
+/**
+ * Load welcome page
+ */
+ipcMain.handle('load-welcome', async () => {
+  if (!w1) return { success: false, error: 'W1 not available' };
+  
+  try {
+    await w1.loadFile(path.join(__dirname, 'ui/welcome.html'));
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+});
+
+/**
  * Capture W1 page and save to Downloads folder (full page)
  */
 ipcMain.handle('capture-and-save-page', async () => {
   if (!w1) return { success: false, error: 'W1 not available' };
   
   try {
-    // Use Chrome DevTools Protocol for full page screenshot
-    const debug = w1.webContents.debugger;
+    // Get full page dimensions
+    const dimensions = await w1.webContents.executeJavaScript(`
+      ({
+        width: Math.max(
+          document.documentElement.scrollWidth,
+          document.body.scrollWidth,
+          document.documentElement.offsetWidth,
+          document.body.offsetWidth,
+          document.documentElement.clientWidth
+        ),
+        height: Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+          document.documentElement.offsetHeight,
+          document.body.offsetHeight,
+          document.documentElement.clientHeight
+        )
+      })
+    `);
+
+    // Capture the entire page with specified dimensions
+    const image = await w1.webContents.capturePage({
+      x: 0,
+      y: 0,
+      width: dimensions.width,
+      height: dimensions.height
+    });
     
-    try {
-      // Attach debugger
-      await debug.attach('1.3');
-      
-      // Get layout metrics to determine full page size
-      const { contentSize } = await debug.sendCommand('Page.getLayoutMetrics');
-      
-      // Capture screenshot with full page dimensions
-      const { data } = await debug.sendCommand('Page.captureScreenshot', {
-        format: 'png',
-        captureBeyondViewport: true,
-        clip: {
-          x: 0,
-          y: 0,
-          width: contentSize.width,
-          height: contentSize.height,
-          scale: 1
-        }
-      });
-      
-      // Detach debugger
-      debug.detach();
-      
-      // Get Downloads folder
-      const downloadsPath = path.join(os.homedir(), 'Downloads');
-      const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
-      const fileName = `screenshot-${timestamp}.png`;
-      const filePath = path.join(downloadsPath, fileName);
-      
-      // Save file (data is base64)
-      fs.writeFileSync(filePath, Buffer.from(data, 'base64'));
-      
-      return { success: true, filePath, fileName };
-    } catch (debugError: any) {
-      // Ensure debugger is detached on error
-      try {
-        debug.detach();
-      } catch (e) {
-        // Ignore detach errors
-      }
-      throw debugError;
-    }
+    // Get Downloads folder
+    const downloadsPath = path.join(os.homedir(), 'Downloads');
+    const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
+    const fileName = `screenshot-${timestamp}.png`;
+    const filePath = path.join(downloadsPath, fileName);
+    
+    // Save file
+    fs.writeFileSync(filePath, image.toPNG());
+    
+    return { success: true, filePath, fileName };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -379,47 +416,36 @@ ipcMain.handle('capture-to-clipboard', async () => {
   if (!w1) return { success: false, error: 'W1 not available' };
   
   try {
-    // Use Chrome DevTools Protocol for full page screenshot
-    const debug = w1.webContents.debugger;
+    // Get full page dimensions
+    const dimensions = await w1.webContents.executeJavaScript(`
+      ({
+        width: Math.max(
+          document.documentElement.scrollWidth,
+          document.body.scrollWidth,
+          document.documentElement.offsetWidth,
+          document.body.offsetWidth,
+          document.documentElement.clientWidth
+        ),
+        height: Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+          document.documentElement.offsetHeight,
+          document.body.offsetHeight,
+          document.documentElement.clientHeight
+        )
+      })
+    `);
+
+    // Capture the entire page with specified dimensions
+    const image = await w1.webContents.capturePage({
+      x: 0,
+      y: 0,
+      width: dimensions.width,
+      height: dimensions.height
+    });
     
-    try {
-      // Attach debugger
-      await debug.attach('1.3');
-      
-      // Get layout metrics to determine full page size
-      const { contentSize } = await debug.sendCommand('Page.getLayoutMetrics');
-      
-      // Capture screenshot with full page dimensions
-      const { data } = await debug.sendCommand('Page.captureScreenshot', {
-        format: 'png',
-        captureBeyondViewport: true,
-        clip: {
-          x: 0,
-          y: 0,
-          width: contentSize.width,
-          height: contentSize.height,
-          scale: 1
-        }
-      });
-      
-      // Detach debugger
-      debug.detach();
-      
-      // Convert base64 to NativeImage and copy to clipboard
-      const { nativeImage } = require('electron');
-      const image = nativeImage.createFromBuffer(Buffer.from(data, 'base64'));
-      clipboard.writeImage(image);
-      
-      return { success: true };
-    } catch (debugError: any) {
-      // Ensure debugger is detached on error
-      try {
-        debug.detach();
-      } catch (e) {
-        // Ignore detach errors
-      }
-      throw debugError;
-    }
+    clipboard.writeImage(image);
+    return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

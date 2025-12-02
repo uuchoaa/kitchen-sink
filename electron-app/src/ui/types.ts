@@ -64,6 +64,10 @@ export interface ElectronAPI {
   captureAndSavePage: () => Promise<{ success: boolean; filePath?: string; fileName?: string; error?: string }>;
   captureToClipboard: () => Promise<{ success: boolean; error?: string }>;
 
+  // Navigation history
+  clearHistory: () => Promise<{ success: boolean; error?: string }>;
+  loadWelcome: () => Promise<{ success: boolean; error?: string }>;
+
   // Event listeners
   onInitData: (callback: (data: { sources: Source[]; processors: Processor[] }) => void) => void;
   onUrlChanged: (callback: (data: { url: string; source: Source | null; scenario: Scenario | null }) => void) => void;

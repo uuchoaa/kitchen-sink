@@ -4,7 +4,7 @@
   "description": "Modular Electron app for web scraping with extensible sources and actions",
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && cp src/ui/welcome.html dist/ui/welcome.html",
     "build:electron": "tsc",
     "build:react": "vite build",
     "start": "npm run build && electron .",
