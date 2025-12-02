@@ -67,8 +67,8 @@ function createWindows() {
     title: 'Control Panel - W2'
   });
 
-  // Load W2 UI
-  w2.loadFile(path.join(__dirname, 'ui/w2.html'));
+  // Load W2 UI (React app)
+  w2.loadFile(path.join(__dirname, 'ui/index.html'));
   w2.webContents.openDevTools();
 
   // Handle window close
