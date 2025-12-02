@@ -43,6 +43,11 @@ export function DataHistory() {
     return null;
   };
 
+  // Sort records by timestamp, most recent first
+  const sortedRecords = [...records].sort((a, b) => {
+    return new Date(b.result.timestamp).getTime() - new Date(a.result.timestamp).getTime();
+  });
+
   return (
     <div className="bg-white rounded-lg shadow p-4">
       <div className="flex justify-between items-center mb-3">
@@ -55,10 +60,10 @@ export function DataHistory() {
         </button>
       </div>
       <div className="space-y-2">
-        {records.length === 0 ? (
+        {sortedRecords.length === 0 ? (
           <p className="text-sm text-gray-500">No data extracted yet</p>
         ) : (
-          records.map(record => {
+          sortedRecords.map(record => {
             const result = record.result;
             const statusColor = result.success ? 'green' : 'red';
             const time = new Date(result.timestamp).toLocaleTimeString();
