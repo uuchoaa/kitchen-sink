@@ -21,7 +21,7 @@ const HEADLESS = process.env.HEADLESS !== 'false';
 const SLOW_MO = parseInt(process.env.SLOW_MO || '0');
 const TIMEOUT = 30000;
 
-// Load cookies
+// Load and normalize cookies
 function loadCookies() {
   const cookiesPath = join(__dirname, 'cookies.json');
   
@@ -34,7 +34,33 @@ function loadCookies() {
   
   try {
     const cookiesData = readFileSync(cookiesPath, 'utf-8');
-    return JSON.parse(cookiesData);
+    const cookies = JSON.parse(cookiesData);
+    
+    // Normalize cookies for Playwright
+    return cookies.map(cookie => {
+      // Normalize sameSite
+      let sameSite = cookie.sameSite;
+      if (!sameSite || !['Strict', 'Lax', 'None'].includes(sameSite)) {
+        sameSite = 'Lax'; // Default safe value
+      }
+      
+      // Ensure domain starts with . for subdomain matching
+      let domain = cookie.domain;
+      if (domain && !domain.startsWith('.') && domain.includes('linkedin')) {
+        domain = '.' + domain;
+      }
+      
+      return {
+        name: cookie.name,
+        value: cookie.value,
+        domain: domain || '.linkedin.com',
+        path: cookie.path || '/',
+        expires: cookie.expirationDate || cookie.expires || -1,
+        httpOnly: cookie.httpOnly || false,
+        secure: cookie.secure !== false, // Default to true
+        sameSite: sameSite
+      };
+    });
   } catch (error) {
     console.error('❌ Error parsing cookies.json:', error.message);
     process.exit(1);
@@ -198,7 +224,7 @@ async function main() {
     // Navigate to chat
     console.log('🌐 Navigating to chat...');
     await page.goto(chatUrl, { 
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
       timeout: TIMEOUT 
     });
     
@@ -208,8 +234,11 @@ async function main() {
       timeout: TIMEOUT 
     });
     
+    console.log('✅ Chat loaded!');
+    
     // Give it a moment for dynamic content
-    await page.waitForTimeout(2000);
+    console.log('⏳ Loading all messages...');
+    await page.waitForTimeout(3000);
     
     // Extract conversation
     console.log('📖 Extracting conversation...');
@@ -221,6 +250,13 @@ async function main() {
       console.log(`💬 Total messages: ${result.totalMessages}`);
       console.log('\n📄 Full JSON output:\n');
       console.log(JSON.stringify(result, null, 2));
+      
+      // If running with visible browser, wait for user to review
+      if (!HEADLESS) {
+        console.log('\n⏸️  Browser will stay open for 5 seconds so you can review...');
+        console.log('💡 Press Ctrl+C to close earlier');
+        await page.waitForTimeout(5000);
+      }
     } else {
       console.error('\n❌ Extraction failed:', result.error);
       console.error('Stack:', result.stack);
@@ -230,14 +266,22 @@ async function main() {
   } catch (error) {
     console.error('\n❌ Error:', error.message);
     
-    // Take screenshot on error
-    const screenshotPath = join(__dirname, `error-${Date.now()}.png`);
-    await page.screenshot({ path: screenshotPath, fullPage: true });
-    console.error(`📸 Screenshot saved to: ${screenshotPath}`);
+    // Only try to take screenshot if page is still open
+    try {
+      const screenshotPath = join(__dirname, `error-${Date.now()}.png`);
+      await page.screenshot({ path: screenshotPath, fullPage: true });
+      console.error(`📸 Screenshot saved to: ${screenshotPath}`);
+    } catch (screenshotError) {
+      console.error('⚠️  Could not save screenshot (page was closed)');
+    }
     
     process.exit(1);
   } finally {
-    await browser.close();
+    try {
+      await browser.close();
+    } catch (e) {
+      // Browser already closed, ignore
+    }
   }
 }
 

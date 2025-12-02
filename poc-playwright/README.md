@@ -70,6 +70,12 @@ Se preferir, use a extensão [Cookie-Editor](https://chrome.google.com/webstore/
 
 ```bash
 node read-chat.js "https://www.linkedin.com/messaging/thread/2-XXXXX"
+
+# Ver logs detalhados do browser console
+DEBUG=1 node read-chat.js "https://www.linkedin.com/messaging/thread/2-XXXXX"
+
+# Rodar com browser visível para debugging
+HEADLESS=false node read-chat.js "https://www.linkedin.com/messaging/thread/2-XXXXX"
 ```
 
 Saída: JSON com informações do contato e todas as mensagens do chat.
