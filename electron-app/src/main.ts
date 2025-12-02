@@ -53,7 +53,6 @@ function createWindows() {
     console.log('No last URL, loading welcome page');
     w1.loadFile(path.join(__dirname, 'ui/welcome.html'));
   }
-  w1.webContents.openDevTools();
 
   // Listen to navigation changes in W1
   w1.webContents.on('did-navigate', () => {
@@ -153,7 +152,8 @@ app.whenReady().then(() => {
         processors: allProcessors.map(p => ({
           id: p.id,
           name: p.name,
-          description: p.description
+          description: p.description,
+          compatibleDataTypes: p.compatibleDataTypes
         }))
       });
       notifyW2OfUrlChange();

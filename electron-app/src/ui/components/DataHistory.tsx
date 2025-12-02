@@ -11,6 +11,38 @@ export function DataHistory() {
     }
   };
 
+  const renderPreview = (record: any) => {
+    const result = record.result;
+    const dataType = result.dataType;
+
+    // Image preview
+    if (dataType === 'image' && result.success && result.data?.dataUrl) {
+      return (
+        <div className="mt-2">
+          <img 
+            src={result.data.dataUrl} 
+            alt="Screenshot preview" 
+            className="max-w-full h-20 object-contain border border-gray-300 rounded"
+          />
+        </div>
+      );
+    }
+
+    // Text/JSON preview
+    if ((dataType === 'text' || dataType === 'json') && result.success && result.data) {
+      const preview = typeof result.data === 'string' 
+        ? result.data.substring(0, 100)
+        : JSON.stringify(result.data).substring(0, 100);
+      return (
+        <div className="mt-1 text-xs text-gray-500 truncate">
+          {preview}...
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow p-4">
       <div className="flex justify-between items-center mb-3">
@@ -46,8 +78,9 @@ export function DataHistory() {
                         ✓ Processed by {record.processed.processorName}
                       </div>
                     )}
+                    {renderPreview(record)}
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0 ml-2">
                     <span className={`inline-block px-2 py-1 text-xs rounded bg-${statusColor}-100 text-${statusColor}-700`}>
                       {result.success ? 'Success' : 'Failed'}
                     </span>
