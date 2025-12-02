@@ -111,6 +111,20 @@ function notifyW2OfUrlChange() {
     // Detect scenario
     const scenario = scenarioDetector.detect(source, url);
 
+    let allReaders = scenario?.readers || [];
+    let allWriters = scenario?.writers || [];
+
+    // If source is NOT universal, add universal actions
+    if (source.id !== 'universal') {
+      const universalSource = sourceManager.getSource('universal');
+      const universalScenario = universalSource ? scenarioDetector.detect(universalSource, url) : null;
+      
+      if (universalScenario) {
+        allReaders = [...universalScenario.readers, ...allReaders];
+        allWriters = [...universalScenario.writers, ...allWriters];
+      }
+    }
+
     w2.webContents.send('url-changed', {
       url,
       source: {
@@ -120,8 +134,8 @@ function notifyW2OfUrlChange() {
       scenario: scenario ? {
         id: scenario.id,
         name: scenario.name,
-        readers: scenario.readers.map(r => ({ id: r.id, name: r.name, description: r.description })),
-        writers: scenario.writers.map(w => ({ id: w.id, name: w.name, description: w.description }))
+        readers: allReaders.map(r => ({ id: r.id, name: r.name, description: r.description })),
+        writers: allWriters.map(w => ({ id: w.id, name: w.name, description: w.description }))
       } : null
     });
   } else {
@@ -238,7 +252,20 @@ ipcMain.handle('execute-reader', async (event, sourceId: string, scenarioId: str
   const scenario = scenarioDetector.findScenarioById(source, scenarioId);
   if (!scenario) return { success: false, error: 'Scenario not found' };
 
-  const reader = scenario.readers.find(r => r.id === readerId);
+  let reader = scenario.readers.find(r => r.id === readerId);
+  
+  // If not found in specific scenario, try universal scenario
+  if (!reader) {
+    const universalSource = sourceManager.getSource('universal');
+    if (universalSource) {
+      const url = w1.webContents.getURL();
+      const universalScenario = scenarioDetector.detect(universalSource, url);
+      if (universalScenario) {
+        reader = universalScenario.readers.find(r => r.id === readerId);
+      }
+    }
+  }
+  
   if (!reader) return { success: false, error: 'Reader not found' };
 
   const result = await actionExecutor.executeReader(w1, reader, sourceId, scenarioId);
