@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control Panel - W2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen overflow-hidden">
+  <div class="flex flex-col h-full">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 p-4">
+      <h1 class="text-xl font-bold text-gray-800">Control Panel</h1>
+      <div class="mt-2 text-sm text-gray-600">
+        <div><strong>URL:</strong> <span id="current-url" class="font-mono text-xs">-</span></div>
+        <div><strong>Source:</strong> <span id="current-source">-</span></div>
+        <div><strong>Scenario:</strong> <span id="current-scenario">-</span></div>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+      
+      <!-- Actions Section -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Actions</h2>
+        
+        <!-- Readers -->
+        <div class="mb-4">
+          <h3 class="text-sm font-medium text-gray-700 mb-2">Readers</h3>
+          <div id="readers-list" class="space-y-2">
+            <p class="text-sm text-gray-500">No readers available for current page</p>
+          </div>
+        </div>
+
+        <!-- Writers -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-700 mb-2">Writers</h3>
+          <div id="writers-list" class="space-y-2">
+            <p class="text-sm text-gray-500">No writers available for current page</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data History Section -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-lg font-semibold">Data History</h2>
+          <button id="clear-history-btn" class="text-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+            Clear
+          </button>
+        </div>
+        <div id="history-list" class="space-y-2">
+          <p class="text-sm text-gray-500">No data extracted yet</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Writer Input Modal (hidden by default) -->
+  <div id="writer-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+      <h3 class="text-lg font-semibold mb-4" id="writer-modal-title">Input Data</h3>
+      <textarea id="writer-input" class="w-full border border-gray-300 rounded p-2 h-32 font-mono text-sm" placeholder="Enter input data..."></textarea>
+      <div class="flex justify-end space-x-2 mt-4">
+        <button id="writer-cancel-btn" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+          Cancel
+        </button>
+        <button id="writer-submit-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          Execute
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Detail Modal (hidden by default) -->
+  <div id="detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-3/4 h-3/4 flex flex-col">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold" id="detail-modal-title">Data Details</h3>
+        <button id="detail-close-btn" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      
+      <!-- Processors -->
+      <div class="mb-4">
+        <label class="text-sm font-medium text-gray-700">Apply Processor:</label>
+        <div class="flex space-x-2 mt-2">
+          <select id="processor-select" class="flex-1 border border-gray-300 rounded p-2 text-sm">
+            <option value="">Select a processor...</option>
+          </select>
+          <button id="apply-processor-btn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            Apply
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-auto">
+        <pre id="detail-content" class="bg-gray-100 p-4 rounded text-xs font-mono overflow-auto h-full"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="./w2.js"></script>
+</body>
+</html>
+
