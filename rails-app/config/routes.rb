@@ -1,7 +1,16 @@
 Rails.application.routes.draw do
-  resources :deals
+  resources :deals do
+    collection do
+      post :find_or_create
+      post :summarize
+      post :generate_responses
+    end
+  end
   resources :agencies
   resources :recruters
+
+  # Electron LinkedIn Scraper
+  get "/electron/linkedin", to: "electron#index"
 
   # Kitchen Sink
   scope :kitchen_sink, as: :kitchen_sink do
