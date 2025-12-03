@@ -694,6 +694,7 @@ render Cuy::ModelDetails.new(model: @post)
 - [Components Guide](./COMPONENTS.md) - Detailed component documentation
 - [Form Layouts Guide](./FORM_LAYOUTS.md) - Form layout strategies and patterns
 - [Rails Integration Guide](./RAILS_INTEGRATION.md) - Model-aware components
+- [Migration Guide](./MIGRATION_GUIDE.md) - How to migrate Tailwind UI HTML to Cuy
 - [Component Examples](./phlexbook/stories/)
 
 ## 🤝 Contributing
