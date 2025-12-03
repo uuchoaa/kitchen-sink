@@ -1,14 +1,11 @@
 class CrudController < ApplicationController
-  layout :false
+  before_action :set_model_class
   before_action :set_resource, only: [ :show, :edit, :update, :destroy ]
+  layout :false
 
   def new
-    modelKlass = controller_name.classify.camelize.constantize # "agencies" becames Agency
-    model = modelKlass.new
-
-    viewKlass = "Views::#{controller_name.camelize}::New".constantize
-    view = viewKlass.new
-    view.model = model
+    view = view_klass.new
+    view.model = model_class.new
     view.current_path = request.path
     render view
   end
@@ -42,6 +39,10 @@ class CrudController < ApplicationController
 
   def set_resource
     @resource = model_class.find(params[:id])
+  end
+
+  def view_klass
+    @view_klass ||= "Views::#{controller_name.camelize}::#{action_name.camelize}".constantize
   end
 
   # Permite todos os atributos exceto timestamps e id
