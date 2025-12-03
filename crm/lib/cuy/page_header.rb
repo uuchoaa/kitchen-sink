@@ -9,7 +9,7 @@ class Cuy::PageHeader < Cuy::Base
       div(class: "min-w-0 flex-1") do
         h2(
           class:
-            "text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight dark:text-white",
+            "text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight",
          ) { @title }
       end
 

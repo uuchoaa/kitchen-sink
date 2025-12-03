@@ -4,6 +4,7 @@ class Views::Base < Cuy::Base
   # The `Views::Base` is an abstract class for all your views.
 
   attr_accessor :model
+  attr_accessor :models
   attr_accessor :current_path
 
   def initialize(model = nil)

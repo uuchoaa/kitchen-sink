@@ -1,16 +1,16 @@
 class CrudController < ApplicationController
   before_action :set_model_class
   before_action :set_resource, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_view
   layout :false
 
   def new
-    view = view_klass.new
-    view.model = model_class.new
-    view.current_path = request.path
-    render view
+    render @view
   end
 
   def index
+    @view.models = model_class.all
+    render @view
   end
 
   def show
@@ -26,6 +26,12 @@ class CrudController < ApplicationController
   end
 
   private
+
+  def set_view
+    @view = view_klass.new
+    @view.model = model_class.new
+    @view.current_path = request.path
+  end
 
   # Infere o model class a partir do nome do controller
   # Ex: AgenciesController → Agency
