@@ -3,7 +3,11 @@ class AgenciesController < ApplicationController
 
   def new
     agency = Agency.new
-    render Views::Agencies::New.new(agency)
+
+    view = Views::Agencies::New.new
+    view.model = agency
+    view.current_path = request.path
+    render view
   end
 
   def index
