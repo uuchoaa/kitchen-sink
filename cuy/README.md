@@ -324,22 +324,79 @@ render Cuy::Timeline.new(events: events)
 
 ### Form Components
 
-#### Form with Fields
+Cuy provides **three layers of form abstractions** for different use cases. See [Form Layouts Guide](./FORM_LAYOUTS.md) for comprehensive documentation.
+
+#### Layer 1: Smart Form Builder (ModelForm)
+
+For standard CRUD forms with maximum productivity:
 
 ```ruby
-render Cuy::Form.new(action: "/posts", method: :post) do |form|
-  form.field(label: "Title") do
-    render Cuy::Input.new(name: "post[title]", required: true)
+render Cuy::ModelForm.new(@user) do |f|
+  f.section("Profile", "Public information") do
+    f.input(:username, addon: "myapp.com/")
+    f.textarea(:bio, hint: "Tell us about yourself")
+    f.file_field(:avatar, preview: :avatar)
   end
   
-  form.field(label: "Content") do
-    render Cuy::Textarea.new(name: "post[content]", rows: 5)
+  f.section("Account") do
+    f.row do |r|
+      r.input(:first_name, span: 3)
+      r.input(:last_name, span: 3)
+    end
+    f.input(:email, type: :email, span: :full)
   end
   
-  form.actions do
-    render Cuy::Button.new(type: :submit, variant: :primary) { "Save" }
-    render Cuy::Button.new(variant: :outline, href: "/posts") { "Cancel" }
+  f.actions do |a|
+    a.cancel
+    a.submit("Save Profile")
   end
+end
+```
+
+#### Layer 2: Manual Layout Control
+
+For custom layouts with explicit control:
+
+```ruby
+render Cuy::Form.new(action: create_post_path) do
+  render Cuy::Form::Section.new(title: "Post Details") do
+    render Cuy::Form::Grid.new(cols: { sm: 6 }) do |grid|
+      grid.column(span: :full) do
+        render Cuy::Input.new(name: "title", label: "Title")
+      end
+      
+      grid.column(span: 4) do
+        render Cuy::Select.new(name: "category", label: "Category")
+      end
+      
+      grid.column(span: 2) do
+        render Cuy::Input.new(name: "publish_date", type: :date)
+      end
+    end
+  end
+  
+  render Cuy::Form::Actions.new(align: :end) do |actions|
+    actions.button("Cancel", variant: :outline)
+    actions.submit("Publish")
+  end
+end
+```
+
+#### Layer 3: Full Phlex Control
+
+Mix Cuy components with raw HTML for complete flexibility:
+
+```ruby
+form(action: create_post_path, method: :post) do
+  div(class: "space-y-12") do
+    # Custom layout
+    div(class: "grid grid-cols-2 gap-4") do
+      div { render Cuy::Input.new(name: "title") }
+      div { render Cuy::Select.new(name: "status") }
+    end
+  end
+  
+  render Cuy::Form::Actions.new(align: :end)
 end
 ```
 
@@ -635,6 +692,7 @@ render Cuy::ModelDetails.new(model: @post)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Tailwind UI](https://tailwindcss.com/plus)
 - [Components Guide](./COMPONENTS.md) - Detailed component documentation
+- [Form Layouts Guide](./FORM_LAYOUTS.md) - Form layout strategies and patterns
 - [Rails Integration Guide](./RAILS_INTEGRATION.md) - Model-aware components
 - [Component Examples](./phlexbook/stories/)
 
