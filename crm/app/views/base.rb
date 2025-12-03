@@ -1,9 +1,28 @@
 # frozen_string_literal: true
 
-class Views::Base < Components::Base
+class Views::Base < Phlex::HTML
   # The `Views::Base` is an abstract class for all your views.
 
-  # By default, it inherits from `Components::Base`, but you
-  # can change that to `Phlex::HTML` if you want to keep views and
-  # components independent.
+  def initialize(model = nil)
+    @model = model
+  end
+
+  def page_header
+    h1(class: "font-bold text-4xl") { "#{@model&.class.to_s.humanize}" }
+  end
+
+  def view_template
+    page_header
+    div do
+      main_content
+    end
+  end
+
+  def main_content
+    raise 'It should be overrided!'
+  end
+
+  def around_template(&)
+    render Cuy::DefaultLayout.new(&)
+  end
 end
