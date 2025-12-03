@@ -1570,5 +1570,1357 @@ end
 
 ---
 
+### RadioGroup - Radio Button Selection
+
+Radio buttons for mutually exclusive selections, with support for simple lists, inline layouts, descriptions, and card-style options.
+
+#### Basic Usage
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "notification_method",
+  legend: "Notifications",
+  hint: "How do you prefer to receive notifications?"
+) do |group|
+  group.radio("email", "Email", checked: true)
+  group.radio("sms", "Phone (SMS)")
+  group.radio("push", "Push notification")
+end
+```
+
+#### API Reference
+
+```ruby
+Cuy::RadioGroup.new(
+  name: String,                # Radio button name attribute
+  legend: String | nil,        # Fieldset legend
+  hint: String | nil,          # Help text below legend
+  layout: Symbol,              # :stacked (default), :inline, :cards, :small_cards
+  **html_options
+)
+
+# Radio methods
+group.radio(
+  value: String,
+  label: String,
+  checked: Boolean,
+  disabled: Boolean,
+  &block                       # For rich content
+)
+```
+
+#### Layout Variants
+
+##### Stacked List (Default)
+
+Vertical list of radio buttons with labels.
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "privacy",
+  legend: "Privacy",
+  layout: :stacked  # default
+) do |group|
+  group.radio("public", "Public access")
+  group.radio("private", "Private to team", checked: true)
+  group.radio("restricted", "Restricted")
+end
+```
+
+##### Inline List
+
+Horizontal layout for short lists.
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "size",
+  legend: "Size",
+  layout: :inline
+) do |group|
+  group.radio("small", "Small")
+  group.radio("medium", "Medium", checked: true)
+  group.radio("large", "Large")
+end
+```
+
+##### With Descriptions
+
+Add description text below each option.
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "plan",
+  legend: "Choose your plan"
+) do |group|
+  group.radio("free", checked: true) do |r|
+    r.label("Free")
+    r.description("Basic features for individuals")
+  end
+  
+  group.radio("pro") do |r|
+    r.label("Pro")
+    r.description("Advanced features and priority support")
+  end
+  
+  group.radio("enterprise") do |r|
+    r.label("Enterprise")
+    r.description("Custom solutions for large teams")
+  end
+end
+```
+
+##### With Inline Descriptions
+
+Description on the same line as label.
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "frequency",
+  legend: "Update frequency"
+) do |group|
+  group.radio("realtime", checked: true) do |r|
+    r.label("Real-time")
+    r.inline_description("Updates immediately")
+  end
+  
+  group.radio("daily") do |r|
+    r.label("Daily")
+    r.inline_description("Updates once per day")
+  end
+end
+```
+
+##### Card Layout
+
+Large, clickable cards with radio indicators.
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "deployment",
+  legend: "Deployment target",
+  layout: :cards
+) do |group|
+  group.radio("cloud", checked: true) do |r|
+    r.icon(:cloud)
+    r.label("Cloud")
+    r.description("Deploy to our managed cloud infrastructure")
+  end
+  
+  group.radio("on_premise") do |r|
+    r.icon(:server)
+    r.label("On-Premise")
+    r.description("Deploy to your own infrastructure")
+  end
+  
+  group.radio("hybrid") do |r|
+    r.icon(:globe)
+    r.label("Hybrid")
+    r.description("Combination of cloud and on-premise")
+  end
+end
+```
+
+**Card Layout:**
+```
+┌─────────────────────────────┐
+│ [✓]  ☁️  Cloud             │
+│ Deploy to our managed       │
+│ cloud infrastructure        │
+└─────────────────────────────┘
+```
+
+##### Small Card Layout
+
+Compact card layout for multiple options.
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "color",
+  legend: "Theme color",
+  layout: :small_cards
+) do |group|
+  group.radio("indigo", checked: true) do |r|
+    r.color_swatch("#6366f1")
+    r.label("Indigo")
+  end
+  
+  group.radio("blue") do |r|
+    r.color_swatch("#3b82f6")
+    r.label("Blue")
+  end
+  
+  group.radio("green") do |r|
+    r.color_swatch("#10b981")
+    r.label("Green")
+  end
+end
+```
+
+**Small Cards:**
+```
+┌────┐ ┌────┐ ┌────┐
+│[✓] │ │    │ │    │
+│ ●  │ │ ●  │ │ ●  │
+│Ind │ │Blue│ │Grn │
+└────┘ └────┘ └────┘
+```
+
+##### Radio on Right
+
+Radio button positioned on the right side.
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "priority",
+  legend: "Select priority",
+  radio_position: :right
+) do |group|
+  group.radio("low") do |r|
+    r.label("Low Priority")
+    r.description("Process in background")
+  end
+  
+  group.radio("high", checked: true) do |r|
+    r.label("High Priority")
+    r.description("Process immediately")
+    r.badge("Recommended", variant: :primary)
+  end
+end
+```
+
+#### Advanced Examples
+
+##### With Icons and Badges
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "subscription",
+  legend: "Choose subscription"
+) do |group|
+  group.radio("basic") do |r|
+    r.icon(:user)
+    r.label("Basic")
+    r.description("$9/month • For individuals")
+  end
+  
+  group.radio("pro", checked: true) do |r|
+    r.icon(:users)
+    r.label("Professional")
+    r.description("$29/month • For small teams")
+    r.badge("Popular", variant: :primary)
+  end
+  
+  group.radio("enterprise") do |r|
+    r.icon(:building)
+    r.label("Enterprise")
+    r.description("Custom pricing • For organizations")
+    r.badge("Contact Sales", variant: :gray)
+  end
+end
+```
+
+##### Branded/Colored Options
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "environment",
+  legend: "Deploy to",
+  layout: :cards
+) do |group|
+  group.radio("production") do |r|
+    r.label("Production")
+    r.description("Live environment")
+    r.status(:success)  # Green indicator
+  end
+  
+  group.radio("staging", checked: true) do |r|
+    r.label("Staging")
+    r.description("Pre-production testing")
+    r.status(:warning)  # Yellow indicator
+  end
+  
+  group.radio("development") do |r|
+    r.label("Development")
+    r.description("Local development")
+    r.status(:gray)  # Gray indicator
+  end
+end
+```
+
+##### With Disabled Options
+
+```ruby
+render Cuy::RadioGroup.new(
+  name: "shipping",
+  legend: "Shipping method"
+) do |group|
+  group.radio("standard", checked: true) do |r|
+    r.label("Standard Shipping")
+    r.description("5-7 business days • Free")
+  end
+  
+  group.radio("express") do |r|
+    r.label("Express Shipping")
+    r.description("2-3 business days • $10")
+  end
+  
+  group.radio("overnight", disabled: true) do |r|
+    r.label("Overnight Shipping")
+    r.description("Next day • Unavailable")
+  end
+end
+```
+
+#### Complete Example: Payment Method Selector
+
+```ruby
+class Components::PaymentMethodSelector < Cuy::Component
+  def initialize(name:, selected: nil)
+    @name = name
+    @selected = selected
+  end
+
+  def view_template
+    render Cuy::RadioGroup.new(
+      name: @name,
+      legend: "Payment method",
+      hint: "Select how you'd like to pay",
+      layout: :cards
+    ) do |group|
+      # Credit Card
+      group.radio("credit_card", checked: @selected == "credit_card") do |r|
+        r.icon(:credit_card)
+        r.label("Credit Card")
+        r.description("Visa, Mastercard, Amex")
+        r.badge("Instant", variant: :success)
+      end
+      
+      # Bank Transfer
+      group.radio("bank_transfer", checked: @selected == "bank_transfer") do |r|
+        r.icon(:bank)
+        r.label("Bank Transfer")
+        r.description("Direct bank account transfer")
+        r.inline_hint("2-3 business days")
+      end
+      
+      # PayPal
+      group.radio("paypal", checked: @selected == "paypal") do |r|
+        r.icon(:paypal)  # Custom PayPal icon
+        r.label("PayPal")
+        r.description("Pay with your PayPal account")
+      end
+      
+      # Cryptocurrency (disabled)
+      group.radio("crypto", disabled: true) do |r|
+        r.icon(:bitcoin)
+        r.label("Cryptocurrency")
+        r.description("Coming soon")
+      end
+    end
+  end
+end
+```
+
+#### Styling Notes
+
+**Radio Button:**
+- Custom styled with `appearance-none`
+- Circle shape with `rounded-full`
+- Checked state shows inner dot with `::before` pseudo-element
+- Focus ring with `focus-visible:outline`
+- Disabled state with reduced opacity
+
+**Layouts:**
+- **Stacked**: `space-y-6` between options
+- **Inline**: `flex gap-x-6` horizontal layout
+- **Cards**: Full-width clickable cards with hover states
+- **Small Cards**: Grid layout with compact cards
+
+**Accessibility:**
+- Proper `<fieldset>` and `<legend>` structure
+- Radio buttons grouped by `name` attribute
+- Labels associated with inputs via `for`/`id`
+- Keyboard navigation (arrow keys, space, tab)
+- Focus indicators
+- Screen reader friendly
+
+**Dark Mode:**
+- All variants support dark mode
+- Custom colors for borders and backgrounds
+- Appropriate contrast ratios
+
+---
+
+### CheckboxGroup - Multiple Selection
+
+Checkbox groups for selecting multiple options, with support for descriptions, inline layouts, and various visual styles.
+
+#### Basic Usage
+
+```ruby
+render Cuy::CheckboxGroup.new(
+  legend: "Notifications",
+  hint: "Choose which notifications you want to receive"
+) do |group|
+  group.checkbox("comments", "Comments", checked: true)
+  group.checkbox("candidates", "Candidates")
+  group.checkbox("offers", "Offers")
+end
+```
+
+#### API Reference
+
+```ruby
+Cuy::CheckboxGroup.new(
+  legend: String | nil,        # Fieldset legend
+  hint: String | nil,          # Help text below legend
+  layout: Symbol,              # :stacked (default), :checkbox_right
+  style: Symbol,               # :simple (default), :divided, :bordered
+  **options                    # Additional fieldset attributes
+)
+```
+
+**Checkbox Method:**
+
+```ruby
+group.checkbox(
+  value,                       # Checkbox value/name
+  label,                       # Label text
+  description: nil,            # Optional description
+  inline_description: false,   # Show description inline with label
+  checked: false,              # Pre-checked state
+  disabled: false,             # Disabled state
+  **options                    # Additional input attributes
+)
+```
+
+#### Variants
+
+##### Simple List
+
+```ruby
+render Cuy::CheckboxGroup.new(
+  legend: "Notifications"
+) do |group|
+  group.checkbox("comments", "Comments", checked: true)
+  group.checkbox("candidates", "Candidates")
+  group.checkbox("offers", "Offers")
+end
+```
+
+##### With Descriptions
+
+```ruby
+render Cuy::CheckboxGroup.new(
+  legend: "Notifications"
+) do |group|
+  group.checkbox(
+    "comments",
+    "Comments",
+    description: "Get notified when someone posts a comment on a posting.",
+    checked: true
+  )
+  group.checkbox(
+    "candidates",
+    "Candidates",
+    description: "Get notified when a candidate applies for a job."
+  )
+  group.checkbox(
+    "offers",
+    "Offers",
+    description: "Get notified when a candidate accepts or rejects an offer."
+  )
+end
+```
+
+##### Inline Descriptions
+
+```ruby
+render Cuy::CheckboxGroup.new(
+  legend: "Notifications"
+) do |group|
+  group.checkbox(
+    "comments",
+    "New comments",
+    description: "so you always know what's happening.",
+    inline_description: true,
+    checked: true
+  )
+  group.checkbox(
+    "candidates",
+    "New candidates",
+    description: "who apply for any open postings.",
+    inline_description: true
+  )
+end
+```
+
+**Renders as:**
+```
+[✓] New comments so you always know what's happening.
+[ ] New candidates who apply for any open postings.
+```
+
+##### Checkbox on Right
+
+```ruby
+render Cuy::CheckboxGroup.new(
+  legend: "Notifications",
+  layout: :checkbox_right,
+  style: :divided
+) do |group|
+  group.checkbox(
+    "comments",
+    "Comments",
+    description: "Get notified when someone posts a comment.",
+    checked: true
+  )
+  group.checkbox(
+    "candidates",
+    "Candidates",
+    description: "Get notified when a candidate applies."
+  )
+end
+```
+
+##### Simple List with Heading
+
+```ruby
+render Cuy::CheckboxGroup.new(
+  legend: "Members",
+  style: :bordered
+) do |group|
+  group.checkbox("person-1", "Annette Black", checked: true)
+  group.checkbox("person-2", "Cody Fisher", checked: true)
+  group.checkbox("person-3", "Courtney Henry")
+  group.checkbox("person-4", "Kathryn Murphy")
+  group.checkbox("person-5", "Theresa Webb")
+end
+```
+
+#### Layout Options
+
+**`:stacked`** (default)
+- Checkboxes on the left
+- Labels and descriptions on the right
+- Standard vertical spacing
+
+**`:checkbox_right`**
+- Labels and descriptions on the left
+- Checkboxes aligned to the right
+- Good for longer content
+
+#### Style Options
+
+**`:simple`** (default)
+- No borders
+- Clean spacing with `space-y-5`
+
+**`:divided`**
+- Divider lines between items
+- Top and bottom borders on fieldset
+
+**`:bordered`**
+- Top and bottom borders on fieldset
+- Divided items
+- Good for lists with headings
+
+#### Complete Example
+
+```ruby
+# app/components/notification_settings.rb
+class NotificationSettings < Cuy::Component
+  def initialize(user:)
+    @user = user
+  end
+
+  def view_template
+    render Cuy::Form.new(action: update_notifications_path, method: :patch) do |form|
+      form.section("Email Notifications", "Choose what you want to be notified about") do
+        render Cuy::CheckboxGroup.new(
+          legend: "Push Notifications",
+          hint: "These are delivered via SMS to your mobile phone."
+        ) do |group|
+          group.checkbox(
+            "push_comments",
+            "Comments",
+            description: "Get notified when someone posts a comment.",
+            checked: @user.push_comments?
+          )
+          group.checkbox(
+            "push_candidates",
+            "Candidates",
+            description: "Get notified when a candidate applies for a job.",
+            checked: @user.push_candidates?
+          )
+          group.checkbox(
+            "push_offers",
+            "Offers",
+            description: "Get notified when a candidate accepts or rejects an offer.",
+            checked: @user.push_offers?
+          )
+        end
+
+        render Cuy::CheckboxGroup.new(
+          legend: "Email Notifications",
+          style: :divided,
+          layout: :checkbox_right
+        ) do |group|
+          group.checkbox(
+            "email_marketing",
+            "Marketing emails",
+            description: "Receive emails about new products and features.",
+            checked: @user.email_marketing?
+          )
+          group.checkbox(
+            "email_security",
+            "Security emails",
+            description: "Receive emails about your account security.",
+            checked: @user.email_security?,
+            disabled: true  # Always on
+          )
+        end
+      end
+
+      form.actions do
+        render Cuy::Button.new(type: :submit, variant: :primary) { "Save preferences" }
+      end
+    end
+  end
+end
+```
+
+#### Accessibility Notes
+
+- Always use `<fieldset>` and `<legend>` for grouped checkboxes
+- Use `aria-describedby` to link descriptions to checkboxes
+- Screen reader text with `.sr-only` for inline descriptions
+- Support keyboard navigation (Space to toggle)
+- Use `:disabled` to prevent interaction, not just visual styling
+
+#### Implementation Notes
+
+**Checkbox Structure:**
+```html
+<div class="group grid size-4 grid-cols-1">
+  <input type="checkbox" class="col-start-1 row-start-1 appearance-none rounded-sm ..." />
+  <svg class="pointer-events-none col-start-1 row-start-1 ...">
+    <!-- Checkmark icon -->
+    <path class="opacity-0 group-has-checked:opacity-100" ... />
+    <!-- Indeterminate icon -->
+    <path class="opacity-0 group-has-indeterminate:opacity-100" ... />
+  </svg>
+</div>
+```
+
+**Key Classes:**
+- Checkbox: `appearance-none rounded-sm border checked:bg-indigo-600`
+- Overlaid SVG: `pointer-events-none col-start-1 row-start-1`
+- Show on checked: `group-has-checked:opacity-100`
+- Indeterminate support: `group-has-indeterminate:opacity-100`
+
+---
+
+### Toggle - On/Off Switch
+
+Toggle switches for binary on/off states, with support for labels, descriptions, icons, and various layouts.
+
+#### Basic Usage
+
+```ruby
+render Cuy::Toggle.new(
+  name: "notifications",
+  label: "Enable notifications"
+)
+```
+
+#### API Reference
+
+```ruby
+Cuy::Toggle.new(
+  name: String,                # Input name attribute
+  label: String | nil,         # Label text
+  description: String | nil,   # Description/hint text
+  checked: false,              # Initial checked state
+  disabled: false,             # Disabled state
+  size: :normal,               # :normal or :short
+  label_position: :left,       # :left, :right, or :none
+  with_icons: false,           # Show checkmark/X icons inside knob
+  **options                    # Additional input attributes
+)
+```
+
+#### Variants
+
+##### Simple Toggle
+
+```ruby
+render Cuy::Toggle.new(
+  name: "setting",
+  label_position: :none
+)
+```
+
+##### Short Toggle
+
+Compact version with tighter spacing:
+
+```ruby
+render Cuy::Toggle.new(
+  name: "setting",
+  size: :short,
+  label_position: :none
+)
+```
+
+##### With Icons
+
+Shows checkmark when on, X when off:
+
+```ruby
+render Cuy::Toggle.new(
+  name: "setting",
+  with_icons: true,
+  label_position: :none
+)
+```
+
+##### With Left Label and Description
+
+```ruby
+render Cuy::Toggle.new(
+  name: "availability",
+  label: "Available to hire",
+  description: "Nulla amet tempus sit accumsan. Aliquet turpis sed sit lacinia.",
+  label_position: :left
+)
+```
+
+##### With Right Label
+
+```ruby
+render Cuy::Toggle.new(
+  name: "annual_billing",
+  label: "Annual billing",
+  description: "(Save 10%)",
+  label_position: :right
+)
+```
+
+#### Complete Example
+
+```ruby
+# app/components/user_settings.rb
+class UserSettings < Cuy::Component
+  def initialize(user:)
+    @user = user
+  end
+
+  def view_template
+    render Cuy::Form.new(action: update_settings_path, method: :patch) do |form|
+      form.section("Notifications", "Manage how you receive notifications") do
+        # Toggle with label on left
+        render Cuy::Toggle.new(
+          name: "email_notifications",
+          label: "Email notifications",
+          description: "Receive email about your account activity.",
+          checked: @user.email_notifications?,
+          label_position: :left
+        )
+
+        # Toggle with label on right (billing style)
+        render Cuy::Toggle.new(
+          name: "annual_billing",
+          label: "Annual billing",
+          description: "(Save 10%)",
+          checked: @user.annual_billing?,
+          label_position: :right
+        )
+
+        # Toggle with icons
+        render Cuy::Toggle.new(
+          name: "dark_mode",
+          label: "Dark mode",
+          with_icons: true,
+          checked: @user.dark_mode?,
+          label_position: :left
+        )
+
+        # Compact toggle
+        render Cuy::Toggle.new(
+          name: "compact_view",
+          label: "Compact view",
+          size: :short,
+          checked: @user.compact_view?,
+          label_position: :left
+        )
+      end
+
+      form.actions do
+        render Cuy::Button.new(type: :submit, variant: :primary) { "Save preferences" }
+      end
+    end
+  end
+end
+```
+
+#### Size Options
+
+**`:normal`** (default)
+- Width: `w-11` (44px)
+- Knob: `size-5` (20px)
+- Padding: `p-0.5`
+
+**`:short`**
+- Width: `w-10` (40px)
+- Knob: `size-5` (20px)
+- Height: `h-5` (20px)
+- More compact appearance
+
+#### Label Position Options
+
+**`:left`** (default)
+- Label and description on the left
+- Toggle on the right
+- Uses `justify-between` layout
+
+**`:right`**
+- Toggle on the left
+- Label and description on the right
+- Useful for billing/pricing toggles
+
+**`:none`**
+- No label, just the toggle
+- Use `aria-label` for accessibility
+
+#### Accessibility Notes
+
+- Always provide either a visible label or `aria-label`
+- Use `aria-labelledby` to link to external label
+- Use `aria-describedby` to link to description
+- Support keyboard navigation (Space/Enter to toggle)
+- Support `:disabled` state
+- Clear focus indicators with `has-focus-visible:outline-2`
+
+#### Implementation Notes
+
+**Toggle Structure:**
+```html
+<div class="group relative inline-flex w-11 ... has-checked:bg-indigo-600">
+  <span class="size-5 ... group-has-checked:translate-x-5"></span>
+  <input type="checkbox" class="absolute inset-0 appearance-none" />
+</div>
+```
+
+**With Icons Structure:**
+```html
+<span class="relative size-5 rounded-full ...">
+  <!-- X icon (off state) -->
+  <span class="... opacity-100 group-has-checked:opacity-0">
+    <svg>...</svg>
+  </span>
+  <!-- Checkmark icon (on state) -->
+  <span class="... opacity-0 group-has-checked:opacity-100">
+    <svg>...</svg>
+  </span>
+</span>
+```
+
+**Key Classes:**
+- Container: `group relative inline-flex rounded-full`
+- Background transitions: `transition-colors duration-200 ease-in-out`
+- Knob: `rounded-full bg-white shadow-xs`
+- Knob animation: `transition-transform duration-200 ease-in-out`
+- Checked state: `has-checked:bg-indigo-600 group-has-checked:translate-x-5`
+- Focus: `has-focus-visible:outline-2 outline-offset-2`
+
+**Icon Transitions:**
+- Off icon: `opacity-100 duration-200 ease-in group-has-checked:opacity-0 group-has-checked:duration-100 group-has-checked:ease-out`
+- On icon: `opacity-0 duration-100 ease-out group-has-checked:opacity-100 group-has-checked:duration-200 group-has-checked:ease-in`
+
+---
+
+### Combobox - Searchable Dropdown (Autocomplete)
+
+Autocomplete input with live filtering, supporting rich content like avatars, status indicators, and secondary text.
+
+#### Basic Usage
+
+```ruby
+render Cuy::Combobox.new(
+  name: "assignee",
+  label: "Assigned to",
+  placeholder: "Search users..."
+) do |combo|
+  combo.option("Leslie Alexander", value: "1")
+  combo.option("Michael Foster", value: "2")
+  combo.option("Dries Vincent", value: "3")
+end
+```
+
+#### API Reference
+
+```ruby
+Cuy::Combobox.new(
+  name: String,                # Input name attribute
+  label: String | nil,         # Label text
+  placeholder: String | nil,   # Placeholder text
+  value: String | nil,         # Selected value
+  required: false,             # Required field
+  disabled: false,             # Disabled state
+  error: String | nil,         # Error message
+  hint: String | nil,          # Help text
+  **options                    # Additional attributes
+)
+```
+
+#### Variants
+
+##### Simple Text Options
+
+```ruby
+render Cuy::Combobox.new(name: "user", label: "Assigned to") do |combo|
+  combo.option("Leslie Alexander", value: "1")
+  combo.option("Michael Foster", value: "2")
+  combo.option("Dries Vincent", value: "3")
+end
+```
+
+##### With Avatars
+
+```ruby
+render Cuy::Combobox.new(name: "user", label: "Assigned to") do |combo|
+  combo.option("Leslie Alexander", value: "1", avatar: user.avatar_url)
+  combo.option("Michael Foster", value: "2", avatar: user2.avatar_url)
+  combo.option("Dries Vincent", value: "3", avatar: user3.avatar_url)
+end
+```
+
+##### With Status Indicators
+
+```ruby
+render Cuy::Combobox.new(name: "user", label: "Assigned to") do |combo|
+  combo.option("Leslie Alexander", value: "1", status: :online)
+  combo.option("Michael Foster", value: "2", status: :offline)
+  combo.option("Dries Vincent", value: "3", status: :offline)
+  combo.option("Lindsay Walton", value: "4", status: :online)
+end
+```
+
+**Status Colors:**
+- `:online` → Green dot (`bg-green-400`)
+- `:offline` → Gray dot (`bg-gray-200`)
+- `:busy` → Red dot (`bg-red-400`)
+- `:away` → Yellow dot (`bg-yellow-400`)
+
+##### With Secondary Text
+
+```ruby
+render Cuy::Combobox.new(name: "user", label: "Assigned to") do |combo|
+  combo.option("Leslie Alexander", value: "1", secondary: "@lesliealexander")
+  combo.option("Michael Foster", value: "2", secondary: "@michaelfoster")
+  combo.option("Dries Vincent", value: "3", secondary: "@driesvincent")
+end
+```
+
+##### Rich Options (All Features)
+
+```ruby
+render Cuy::Combobox.new(name: "user", label: "Assigned to") do |combo|
+  combo.option(
+    "Leslie Alexander",
+    value: "1",
+    avatar: user.avatar_url,
+    status: :online,
+    secondary: "@lesliealexander"
+  )
+  
+  combo.option(
+    "Michael Foster",
+    value: "2",
+    avatar: user2.avatar_url,
+    status: :offline,
+    secondary: "michael@example.com"
+  )
+end
+```
+
+#### Custom Option Content
+
+For complete control, use the block form:
+
+```ruby
+render Cuy::Combobox.new(name: "user", label: "Assigned to") do |combo|
+  combo.option(value: "1") do
+    img(src: user.avatar_url, class: "size-6 rounded-full")
+    div(class: "ml-3") do
+      div(class: "font-medium") { "Leslie Alexander" }
+      div(class: "text-sm text-gray-500") { "Engineering" }
+    end
+  end
+end
+```
+
+#### Implementation Notes
+
+**JavaScript Integration:**
+- Uses Headless UI `Combobox` or custom `<el-autocomplete>` web component
+- Filters options as user types
+- Keyboard navigation (↑/↓ arrows, Enter, Escape)
+- Popover positioning with anchor API
+
+**Accessibility:**
+- `role="combobox"` with proper ARIA attributes
+- `aria-expanded`, `aria-activedescendant`
+- Screen reader announcements for filtering results
+- Keyboard accessible
+
+**Styling:**
+- Active option: `aria-selected:bg-indigo-600 aria-selected:text-white`
+- Max height dropdown: `max-h-60 overflow-auto`
+- Smooth transitions on open/close
+
+#### Working Example
+
+```ruby
+# app/components/shared/user_combobox.rb
+module Components
+  module Shared
+    class UserCombobox < Cuy::Component
+      def initialize(users:, selected: nil, name: "user_id")
+        @users = users
+        @selected = selected
+        @name = name
+      end
+
+      def view_template
+        render Cuy::Combobox.new(
+          name: @name,
+          label: "Assign to user",
+          value: @selected&.id,
+          placeholder: "Search users..."
+        ) do |combo|
+          @users.each do |user|
+            combo.option(
+              user.name,
+              value: user.id,
+              avatar: user.avatar_url,
+              status: user.online? ? :online : :offline,
+              secondary: user.email
+            )
+          end
+        end
+      end
+    end
+  end
+end
+
+# Usage in view
+render Components::Shared::UserCombobox.new(
+  users: User.active,
+  selected: @deal.assignee
+)
+```
+
+---
+
+## Layout Components
+
+### Card - Container with Elevation
+
+Content containers with various header/footer combinations, responsive edge-to-edge mobile layouts, and "well" variants for nested content.
+
+#### Basic Usage
+
+```ruby
+render Cuy::Card.new do
+  h3(class: "text-lg font-medium") { "Card Title" }
+  p(class: "mt-2 text-gray-600") { "Card content goes here." }
+end
+```
+
+#### API Reference
+
+```ruby
+Cuy::Card.new(
+  variant: :card,              # :card (default), :well
+  mobile: :default,            # :default, :edge_to_edge
+  padding: true,               # Apply default padding
+  **options                    # Additional HTML attributes
+)
+```
+
+#### Variants
+
+##### Basic Card
+
+Simple elevated container with shadow and rounded corners:
+
+```ruby
+render Cuy::Card.new do
+  # Your content
+end
+```
+
+**Styling:**
+- Light: `bg-white shadow-sm rounded-lg`
+- Dark: `bg-gray-800/50 outline outline-white/10`
+
+##### Card with Header
+
+```ruby
+render Cuy::Card.new do |card|
+  card.header do
+    h3(class: "text-base font-semibold") { "Projects" }
+  end
+  
+  card.body do
+    p { "Main content..." }
+  end
+end
+```
+
+##### Card with Footer
+
+```ruby
+render Cuy::Card.new do |card|
+  card.body do
+    p { "Main content..." }
+  end
+  
+  card.footer do
+    button { "Save" }
+    button { "Cancel" }
+  end
+end
+```
+
+##### Card with Header and Footer
+
+```ruby
+render Cuy::Card.new do |card|
+  card.header do
+    h3 { "Edit Profile" }
+    p(class: "text-sm text-gray-500") { "Update your information" }
+  end
+  
+  card.body do
+    # Form fields
+  end
+  
+  card.footer do
+    button(class: "btn-primary") { "Save" }
+    button(class: "btn-secondary") { "Cancel" }
+  end
+end
+```
+
+##### Card with Gray Footer
+
+Visually separate footer with background color:
+
+```ruby
+render Cuy::Card.new do |card|
+  card.body do
+    p { "Content here..." }
+  end
+  
+  card.footer(background: :gray) do
+    div(class: "flex justify-end gap-3") do
+      button { "Cancel" }
+      button { "Submit" }
+    end
+  end
+end
+```
+
+**Footer Styling:**
+- `bg-gray-50 dark:bg-white/5`
+
+##### Card with Gray Body
+
+Header stands out, body has subtle background:
+
+```ruby
+render Cuy::Card.new do |card|
+  card.header do
+    h3 { "Notifications" }
+  end
+  
+  card.body(background: :gray) do
+    # List of notifications
+  end
+end
+```
+
+##### Edge-to-Edge on Mobile
+
+Card removes padding/border-radius on mobile for full-width layout:
+
+```ruby
+render Cuy::Card.new(mobile: :edge_to_edge) do |card|
+  card.header do
+    h3 { "Responsive Card" }
+  end
+  
+  card.body do
+    p { "Content goes edge-to-edge on mobile" }
+  end
+end
+```
+
+**Mobile Classes:**
+- No rounded corners on mobile: `rounded-none sm:rounded-lg`
+- No side padding on mobile: `px-0 sm:px-6`
+
+##### Well - Nested Content Container
+
+Inset appearance for nested/secondary content:
+
+```ruby
+render Cuy::Card.new(variant: :well) do
+  p(class: "text-sm text-gray-700") do
+    strong { "Note:" }
+    whitespace
+    text "This is supplementary information."
+  end
+end
+```
+
+**Well Styling:**
+- Light: `bg-gray-50 ring-1 ring-inset ring-black/5`
+- Dark: `bg-white/5 ring-1 ring-inset ring-white/10`
+
+##### Well on Gray Background
+
+Use this variant when page background is already gray:
+
+```ruby
+# Page with gray background
+div(class: "bg-gray-100") do
+  render Cuy::Card.new(variant: :well, background: :gray) do
+    p { "Well stands out on gray background" }
+  end
+end
+```
+
+**Well on Gray Styling:**
+- Light: `bg-white ring-1 ring-black/5`
+- Dark: `bg-gray-800/50 ring-1 ring-white/10`
+
+#### Complete Example
+
+```ruby
+# app/views/deals/show.rb
+class Views::Deals::Show < Views::Base
+  def view_template
+    render Cuy::Card.new(mobile: :edge_to_edge) do |card|
+      # Header with actions
+      card.header do
+        div(class: "flex items-center justify-between") do
+          div do
+            h2(class: "text-xl font-semibold") { @deal.title }
+            p(class: "text-sm text-gray-500") { @deal.company.name }
+          end
+          
+          div(class: "flex gap-2") do
+            render Cuy::Button.new(variant: :secondary, size: :sm) { "Edit" }
+            render Cuy::Button.new(variant: :danger, size: :sm) { "Delete" }
+          end
+        end
+      end
+      
+      # Main content
+      card.body do
+        # Deal details
+        render Cuy::DescriptionList.new do |dl|
+          dl.item("Amount", number_to_currency(@deal.amount))
+          dl.item("Stage", @deal.stage)
+          dl.item("Close Date", @deal.close_date)
+        end
+        
+        # Notes section (well inside card)
+        div(class: "mt-6") do
+          h3(class: "text-base font-medium mb-3") { "Notes" }
+          
+          render Cuy::Card.new(variant: :well) do
+            p(class: "text-sm text-gray-700") { @deal.notes }
+          end
+        end
+      end
+      
+      # Footer with actions
+      card.footer(background: :gray) do
+        div(class: "flex justify-between") do
+          span(class: "text-sm text-gray-500") do
+            text "Last updated "
+            time_ago_in_words(@deal.updated_at)
+            text " ago"
+          end
+          
+          div(class: "flex gap-3") do
+            render Cuy::Button.new(variant: :outline) { "Cancel" }
+            render Cuy::Button.new(variant: :primary) { "Save Changes" }
+          end
+        end
+      end
+    end
+  end
+end
+```
+
+#### Layout Strategies
+
+**Standard Layout:**
+```ruby
+# Full-width cards with consistent spacing
+div(class: "space-y-6") do
+  render Cuy::Card.new { ... }
+  render Cuy::Card.new { ... }
+end
+```
+
+**Grid Layout:**
+```ruby
+# Cards in responsive grid
+div(class: "grid gap-6 sm:grid-cols-2 lg:grid-cols-3") do
+  render Cuy::Card.new { ... }
+  render Cuy::Card.new { ... }
+  render Cuy::Card.new { ... }
+end
+```
+
+**Nested Cards:**
+```ruby
+# Main card with nested wells
+render Cuy::Card.new do |card|
+  card.body do
+    # Primary content
+    
+    # Nested well for related info
+    render Cuy::Card.new(variant: :well) do
+      p { "Related information" }
+    end
+  end
+end
+```
+
+#### Design Notes
+
+**When to Use Card vs Well:**
+- **Card**: Primary content containers, main UI sections
+- **Well**: Secondary/supplementary content, nested information, callouts
+
+**Shadow vs Outline:**
+- **Light mode**: Uses `shadow-sm` for subtle elevation
+- **Dark mode**: Uses `outline` to avoid harsh shadows
+
+**Responsive Considerations:**
+- Use `mobile: :edge_to_edge` for mobile-first layouts
+- Cards automatically adapt padding on mobile
+- Consider full-width cards on mobile, grid on desktop
+
+---
+
 More components coming soon! Check the [README](./README.md) for the full component list.
 
