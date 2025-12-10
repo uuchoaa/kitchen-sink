@@ -261,15 +261,137 @@ module GoogleFlights
 end
 ```
 
-### 3. Browser Token Extractor
+### 3. Anti-Detection Configuration
 
-Manages browser pool and extracts tokens:
+Google's anti-bot systems detect automated scraping through various signals. To minimize detection risk, randomize browser fingerprints:
+
+```ruby
+# filepath: lib/config/anti_detection_config.rb
+module GoogleFlights
+  module Config
+    class AntiDetectionConfig
+      # User Agent pool - rotating realistic browser signatures
+      USER_AGENTS = [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'
+      ].freeze
+
+      # Language/Region combinations for Accept-Language header
+      LANGUAGES = [
+        'en-US,en;q=0.9',
+        'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+        'es-ES,es;q=0.9,en;q=0.8',
+        'fr-FR,fr;q=0.9,en;q=0.8',
+        'de-DE,de;q=0.9,en;q=0.8',
+        'en-GB,en;q=0.9'
+      ].freeze
+
+      # Screen resolutions for viewport randomization
+      SCREEN_SIZES = [
+        [1920, 1080],
+        [1366, 768],
+        [1440, 900],
+        [1536, 864],
+        [2560, 1440]
+      ].freeze
+
+      # Timezone offsets for request timing
+      TIMEZONES = [
+        'America/New_York',
+        'America/Chicago',
+        'America/Los_Angeles',
+        'America/Sao_Paulo',
+        'Europe/London',
+        'Europe/Paris',
+        'Asia/Tokyo'
+      ].freeze
+
+      class << self
+        def random_user_agent
+          USER_AGENTS.sample
+        end
+
+        def random_language
+          LANGUAGES.sample
+        end
+
+        def random_screen_size
+          SCREEN_SIZES.sample
+        end
+
+        def random_timezone
+          TIMEZONES.sample
+        end
+
+        # Generate randomized browser options
+        def randomized_browser_config
+          user_agent = random_user_agent
+          screen_size = random_screen_size
+          
+          {
+            user_agent: user_agent,
+            screen_size: screen_size,
+            language: random_language,
+            timezone: random_timezone
+          }
+        end
+      end
+    end
+  end
+end
+```
+
+### 4. Proxy Support (Optional)
+
+For distributed deployments or additional anonymity:
+
+```ruby
+# filepath: lib/config/proxy_config.rb
+module GoogleFlights
+  module Config
+    class ProxyConfig
+      class << self
+        def enabled?
+          ENV['USE_PROXY'] == 'true'
+        end
+
+        def proxy_url
+          ENV['PROXY_URL'] # Format: http://user:pass@proxy.example.com:8080
+        end
+
+        def proxy_rotation_enabled?
+          ENV['PROXY_ROTATION'] == 'true'
+        end
+
+        # Multiple proxies for rotation
+        def proxy_pool
+          ENV['PROXY_POOL']&.split(',') || []
+        end
+
+        def random_proxy
+          proxy_pool.sample || proxy_url
+        end
+      end
+    end
+  end
+end
+```
+
+### 5. Browser Token Extractor
+
+Manages browser pool with anti-detection features:
 
 ```ruby
 # filepath: lib/browser_token_extractor.rb
 require 'singleton'
 require 'ferrum'
 require_relative 'config/token_config'
+require_relative 'config/anti_detection_config'
+require_relative 'config/proxy_config'
 
 module GoogleFlights
   class BrowserTokenExtractor
@@ -331,19 +453,69 @@ module GoogleFlights
 
     def create_browser
       timeout = Config::TokenConfig.browser_timeout
+      anti_detection = Config::AntiDetectionConfig.randomized_browser_config
       
-      Ferrum::Browser.new(
+      browser_options = {
+        'no-sandbox': nil,
+        'disable-dev-shm-usage': nil,
+        'disable-blink-features': 'AutomationControlled',  # Hide automation
+        'disable-infobars': nil,
+        'user-agent': anti_detection[:user_agent]
+      }
+      
+      # Add proxy if enabled
+      if Config::ProxyConfig.enabled?
+        proxy = Config::ProxyConfig.random_proxy
+        browser_options['proxy-server'] = proxy
+      end
+      
+      browser = Ferrum::Browser.new(
         headless: true,
         timeout: timeout,
         process_timeout: timeout,
-        window_size: [1920, 1080],
-        browser_options: {
-          'no-sandbox': nil,
-          'disable-gpu': nil,
-          'disable-dev-shm-usage': nil,
-          'disable-software-rasterizer': nil
-        }
+        window_size: anti_detection[:screen_size],
+        browser_options: browser_options
       )
+      
+      # Set additional fingerprint randomization
+      randomize_browser_fingerprint(browser, anti_detection)
+      
+      browser
+    end
+    
+    def randomize_browser_fingerprint(browser, config)
+      # Override navigator.webdriver flag
+      browser.execute <<~JS
+        Object.defineProperty(navigator, 'webdriver', {
+          get: () => undefined
+        });
+      JS
+      
+      # Set language preferences
+      browser.execute <<~JS
+        Object.defineProperty(navigator, 'language', {
+          get: () => '#{config[:language].split(',').first}'
+        });
+        Object.defineProperty(navigator, 'languages', {
+          get: () => #{config[:language].split(',').map { |l| l.split(';').first.strip }.inspect}
+        });
+      JS
+      
+      # Set timezone
+      browser.execute <<~JS
+        Intl.DateTimeFormat().resolvedOptions().timeZone = '#{config[:timezone]}';
+      JS
+      
+      # Randomize plugins
+      browser.execute <<~JS
+        Object.defineProperty(navigator, 'plugins', {
+          get: () => [
+            {name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer'},
+            {name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai'},
+            {name: 'Native Client', filename: 'internal-nacl-plugin'}
+          ]
+        });
+      JS
     end
 
     def extract_tokens_from_browser(browser)
@@ -499,16 +671,18 @@ module GoogleFlights
     def build_request(uri, origin, destination, departure_date, return_date)
       request = Net::HTTP::Post.new(uri)
 
-      # Standard headers
+      # Standard headers with randomization
+      anti_detection = Config::AntiDetectionConfig
+      
       request['Accept'] = '*/*'
       request['Accept-Encoding'] = 'gzip, deflate, br, zstd'
-      request['Accept-Language'] = 'pt-BR,pt;q=0.9'
+      request['Accept-Language'] = anti_detection.random_language  # Randomized
       request['Cache-Control'] = 'no-cache'
       request['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8'
       request['Origin'] = 'https://www.google.com'
       request['Pragma'] = 'no-cache'
       request['Referer'] = 'https://www.google.com/travel/flights'
-      request['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+      request['User-Agent'] = anti_detection.random_user_agent  # Randomized
 
       # Dynamic tokens from TokenManager
       tokens = @token_manager.tokens
@@ -540,12 +714,25 @@ end
 ```bash
 # .env
 RACK_ENV=production
+
+# Token Management
 TOKEN_TTL=86400                    # 24 hours
 BROWSER_POOL_SIZE=5                # Number of browsers in pool
 BROWSER_TIMEOUT=30                 # Browser operation timeout
 EXTRACTION_TIMEOUT=60              # Token extraction timeout
 AUTO_REFRESH_TOKENS=true           # Auto-refresh on expiration
 TOKEN_CACHE_PATH=/var/cache/tokens.json
+
+# Anti-Detection (Optional)
+USE_PROXY=false                    # Enable proxy support
+PROXY_URL=http://user:pass@proxy.example.com:8080
+PROXY_ROTATION=false               # Rotate between multiple proxies
+PROXY_POOL=proxy1.com:8080,proxy2.com:8080,proxy3.com:8080  # Comma-separated
+
+# Request Randomization
+RANDOMIZE_USER_AGENT=true          # Rotate user agents (recommended)
+RANDOMIZE_LANGUAGE=true            # Vary Accept-Language header (recommended)
+RANDOMIZE_SCREEN_SIZE=true         # Vary viewport size (recommended)
 ```
 
 ### Custom TTL
@@ -893,7 +1080,97 @@ Tokens automatically expire and refresh, minimizing security risks.
 
 Each browser instance runs in isolation with sandbox mode enabled.
 
-### 4. Rate Limiting
+### 4. Anti-Detection Best Practices
+
+To avoid triggering Google's anti-abuse detection:
+
+#### User Agent Rotation
+- Rotate between realistic, current browser user agents
+- Match Chrome/Firefox versions that are currently supported
+- Avoid outdated or uncommon user agents that stand out
+
+#### Language & Locale Variation
+- Vary `Accept-Language` header to simulate different regions
+- Match language to timezone and geographic context when possible
+- Don't always use the same language for every request
+
+#### Viewport Randomization
+- Rotate screen resolutions between common desktop sizes
+- Avoid unusual or uncommon viewport dimensions
+- Match viewport to user agent (mobile vs desktop)
+
+#### Request Timing
+- Add random delays between requests (500ms - 2000ms)
+- Avoid perfectly regular intervals
+- Simulate human browsing patterns
+
+```ruby
+# lib/middleware/human_timing.rb
+class HumanTiming
+  def initialize(app)
+    @app = app
+    @last_request = {}
+  end
+
+  def call(env)
+    ip = env['REMOTE_ADDR']
+    now = Time.now
+    
+    if @last_request[ip]
+      elapsed = now - @last_request[ip]
+      min_delay = 0.5  # 500ms minimum
+      
+      if elapsed < min_delay
+        sleep(min_delay - elapsed + rand(0.5..1.5))
+      end
+    end
+    
+    @last_request[ip] = Time.now
+    @app.call(env)
+  end
+end
+```
+
+#### Proxy Usage (Advanced)
+- Use residential proxies when possible (not datacenter IPs)
+- Rotate between proxies to distribute requests
+- Match proxy location to language/timezone settings
+- Monitor for proxy blacklisting
+
+```ruby
+# Example: Proxy rotation with health checks
+class ProxyRotator
+  def initialize(proxies)
+    @proxies = proxies.map { |p| {url: p, failures: 0} }
+    @current_index = 0
+  end
+
+  def next_proxy
+    proxy = @proxies[@current_index]
+    @current_index = (@current_index + 1) % @proxies.length
+    
+    # Skip proxies with too many failures
+    while proxy[:failures] > 3
+      @current_index = (@current_index + 1) % @proxies.length
+      proxy = @proxies[@current_index]
+    end
+    
+    proxy[:url]
+  end
+
+  def mark_failure(proxy_url)
+    proxy = @proxies.find { |p| p[:url] == proxy_url }
+    proxy[:failures] += 1 if proxy
+  end
+
+  def reset_failures(proxy_url)
+    proxy = @proxies.find { |p| p[:url] == proxy_url }
+    proxy[:failures] = 0 if proxy
+  end
+end
+```
+
+### 5. Rate Limiting
 
 Implement rate limiting to avoid triggering Google's anti-abuse systems:
 
@@ -925,13 +1202,31 @@ class RateLimiter
 end
 ```
 
+## Anti-Detection Checklist
+
+Before deploying to production, verify these anti-detection measures:
+
+- [ ] User agent rotation enabled and using current browser versions
+- [ ] Accept-Language header randomization configured
+- [ ] Viewport sizes randomized (matching desktop resolutions)
+- [ ] Browser fingerprint overrides implemented (navigator.webdriver, plugins)
+- [ ] Request timing delays implemented (avoid regular intervals)
+- [ ] Proxy rotation configured (if using proxies)
+- [ ] Rate limiting in place (max requests per hour)
+- [ ] Token cache TTL appropriate (not too short to avoid excessive browser sessions)
+- [ ] Browser pool size optimized (not too large to avoid resource exhaustion)
+- [ ] Monitoring for failed token extractions (indicates detection)
+
 ## Future Improvements
 
 1. **Distributed Token Cache** - Use Redis for multi-server deployments
-2. **Token Health Monitoring** - Track extraction success rate
-3. **Fallback Strategies** - Multiple token sources
+2. **Token Health Monitoring** - Track extraction success rate and detection events
+3. **Fallback Strategies** - Multiple token sources and backup mechanisms
 4. **Smart Refresh** - Predict token expiration and refresh proactively
 5. **Browser Pool Autoscaling** - Adjust pool size based on load
+6. **Advanced Anti-Detection** - Canvas fingerprint randomization, WebGL noise injection
+7. **Machine Learning** - Detect patterns that trigger anti-bot systems
+8. **Residential Proxy Network** - Rotate between residential IPs for better anonymity
 
 ## References
 
