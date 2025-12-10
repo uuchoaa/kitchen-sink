@@ -413,6 +413,44 @@ curl http://localhost:3000/api/v1/flights/search \
 
 ---
 
+## Testing
+
+The project includes a comprehensive Minitest test suite with 32 tests covering all parser functionality.
+
+### Run Tests
+
+```bash
+# Install test dependencies
+gem install minitest-reporters
+
+# Run all tests
+ruby test_parser.rb
+```
+
+### Test Coverage
+
+```
+32 tests, 82 assertions, 0 failures, 0 errors
+✅ All tests passing
+```
+
+**Tests validate:**
+- ✅ Flight data extraction and parsing
+- ✅ Airport structure (codes, names)
+- ✅ Price conversion (cents → BRL)
+- ✅ Date/time formatting (ISO 8601)
+- ✅ Airline code validation
+- ✅ Extension parsing (WiFi, power, legroom)
+- ✅ Edge case handling (nil, empty inputs)
+- ✅ Helper method functionality
+
+**Test files:**
+- `test_parser.rb` - Full Minitest suite
+- `test_extraction.rb` - Manual extraction demo
+- `test_parse_simple.rb` - Step-by-step debugging
+
+---
+
 ## Contributing
 
 This is a research/educational project. Contributions welcome for:
