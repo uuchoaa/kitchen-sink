@@ -9,6 +9,10 @@ A Ruby client for searching flights on Google Flights with CLI support.
 - Real API integration with Google Flights
 - Comprehensive test suite
 
+## Documentation
+
+- **[Data Model & Parsing Guide](docs/DATA_MODEL.md)** - Detailed documentation of request/response structures, data parsing, and reverse-engineered API details
+
 ## Installation
 
 ```bash
