@@ -72,6 +72,10 @@ class GoogleFlightsClient
     request
   end
 
+  # Location type constants for Google Flights API
+  AIRPORT_TYPE = 0  # Specific airport (e.g., CGH, GRU)
+  CITY_TYPE = 4     # City/metro area (e.g., /m/022pfm for São Paulo)
+
   def build_payload(origin, destination, departure_date, return_date)
     # Building the request payload structure
     # Format: f.req=[null,"[[],[ flight search params ],0,0,0,1]"]
@@ -96,8 +100,8 @@ class GoogleFlightsClient
         [
           # Outbound leg
           [
-            [[[origin_code(origin), 4]]],
-            [[[destination_code(destination), 0]]],
+            [[[origin_code(origin), AIRPORT_TYPE]]],
+            [[[destination_code(destination), AIRPORT_TYPE]]],
             nil,
             0,
             nil,
@@ -114,8 +118,8 @@ class GoogleFlightsClient
           ],
           # Return leg
           [
-            [[[destination_code(destination), 0]]],
-            [[[origin_code(origin), 4]]],
+            [[[destination_code(destination), AIRPORT_TYPE]]],
+            [[[origin_code(origin), AIRPORT_TYPE]]],
             nil,
             0,
             nil,
@@ -149,15 +153,10 @@ class GoogleFlightsClient
   end
 
   def origin_code(origin)
-    # Map common airports to Google's internal codes
-    # For cities, Google uses /m/ codes (from Wikidata/Freebase)
-    # For airports, it uses IATA codes with type 0
-    case origin.upcase
-    when 'GRU', 'SAO', 'CGH', 'VCP'
-      '/m/022pfm' # São Paulo city code
-    else
-      origin.upcase
-    end
+    # Return the airport code as-is
+    # Google Flights accepts IATA airport codes directly
+    # Use AIRPORT_TYPE (0) to search for specific airport
+    origin.upcase
   end
 
   def destination_code(destination)
@@ -293,6 +292,13 @@ class GoogleFlightsClient
       # Ensure segments is an array
       segments = flight_info[2].is_a?(Array) ? flight_info[2] : []
       
+      # Skip invalid entries (alliance codes, incomplete data, etc.)
+      # Valid flights must have departure/arrival airports, duration, and price
+      next unless departure_airport && arrival_airport && duration_minutes && price_cents
+      
+      # Extract flight number from first segment
+      flight_number = extract_flight_number(segments[0])
+      
       # Build flight object
       flight = {
         departure_airport: {
@@ -307,8 +313,9 @@ class GoogleFlightsClient
         airplane: extract_airplane(segments[0]),
         airline: airline_names[0],
         airline_code: airline_code,
+        flight_number: flight_number,
         extensions: extract_extensions(segments[0]),
-        carbon_emissions: extract_carbon_emissions(segments[0]),
+        emissions: extract_carbon_emissions(segments[0]),
         price: price_cents ? (price_cents / 100.0).round(2) : nil,
         departure_time: format_datetime(departure_date, departure_time),
         arrival_time: format_datetime(arrival_date, arrival_time),
@@ -333,6 +340,12 @@ class GoogleFlightsClient
     return nil unless segment
     # Airplane model is at index 17
     segment[17]
+  end
+  
+  def extract_flight_number(segment)
+    return nil unless segment && segment[22]
+    # Flight number is composed of airline code and flight number at indices 0 and 1
+    "#{segment[22][0]}#{segment[22][1]}"
   end
   
   def extract_extensions(segment)

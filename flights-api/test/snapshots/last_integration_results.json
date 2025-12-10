@@ -3,36 +3,37 @@
   "best_flights": [
     {
       "departure_airport": {
-        "code": "GRU",
-        "name": "Aeroporto Internacional de São Paulo/Guarulhos–Governador André Franco Montoro"
+        "code": "CGH",
+        "name": "Aeroporto de São Paulo/Congonhas–Deputado Freitas Nobre"
       },
       "arrival_airport": {
         "code": "JPA",
-        "name": "Aeroporto Internacional de São Paulo/Guarulhos–Governador André Franco Montoro"
+        "name": "Aeroporto de São Paulo/Congonhas–Deputado Freitas Nobre"
       },
-      "duration": 195,
-      "airplane": "Boeing 737",
-      "airline": "Gol",
-      "airline_code": "G3",
+      "duration": 190,
+      "airplane": "Airbus A320",
+      "airline": "LATAM",
+      "airline_code": "LA",
+      "flight_number": "LA3824",
       "extensions": [
         "In-seat power & USB outlets",
         "Wi-Fi",
-        "Average legroom (1)"
+        "Average legroom (2)"
       ],
-      "carbon_emissions": null,
-      "price": 1840.0,
-      "departure_time": "2026-02-06T14:30:00-03:00",
-      "arrival_time": "2026-02-06T17:45:00-03:00",
+      "emissions": null,
+      "price": 1850.0,
+      "departure_time": "2026-02-06T19:40:00-03:00",
+      "arrival_time": "2026-02-06T22:50:00-03:00",
       "stops": 0,
       "segments": [
         {
-          "departure_airport": "GRU",
+          "departure_airport": "CGH",
           "arrival_airport": "JPA",
           "departure_time": null,
-          "arrival_time": "2026-02-06T17:45:00-03:00",
-          "duration": 195,
-          "airline": "Gol",
-          "flight_number": "G31632",
+          "arrival_time": "2026-02-06T22:50:00-03:00",
+          "duration": 190,
+          "airline": "LATAM",
+          "flight_number": "LA3824",
           "airplane": 1
         }
       ]
@@ -46,74 +47,43 @@
         "code": "JPA",
         "name": "Aeroporto de São Paulo/Congonhas–Deputado Freitas Nobre"
       },
-      "duration": 200,
+      "duration": 290,
       "airplane": "Boeing 737",
       "airline": "Gol",
       "airline_code": "G3",
+      "flight_number": "G31568",
       "extensions": [
         "In-seat power & USB outlets",
         "Wi-Fi",
         "Average legroom (1)"
       ],
-      "carbon_emissions": null,
-      "price": 1870.0,
-      "departure_time": "2026-02-06T20:45:00-03:00",
-      "arrival_time": "2026-02-07T00:05:00-03:00",
-      "stops": 1,
+      "emissions": null,
+      "price": 2160.0,
+      "departure_time": "2026-02-06T11:40:00-03:00",
+      "arrival_time": "2026-02-06T16:30:00-03:00",
+      "stops": 0,
       "segments": [
         {
           "departure_airport": "CGH",
+          "arrival_airport": "SSA",
+          "departure_time": null,
+          "arrival_time": "2026-02-06T14:10:00-03:00",
+          "duration": 150,
+          "airline": "Gol",
+          "flight_number": "G31568",
+          "airplane": 1
+        },
+        {
+          "departure_airport": "SSA",
           "arrival_airport": "JPA",
           "departure_time": null,
-          "arrival_time": "2026-02-06T00:05:00-03:00",
-          "duration": 200,
+          "arrival_time": "2026-02-06T16:30:00-03:00",
+          "duration": 95,
           "airline": "Gol",
-          "flight_number": "G31048",
+          "flight_number": "G32142",
           "airplane": 1
         }
       ]
-    },
-    {
-      "departure_airport": {
-        "code": null,
-        "name": null
-      },
-      "arrival_airport": {
-        "code": null,
-        "name": null
-      },
-      "duration": null,
-      "airplane": null,
-      "airline": "O",
-      "airline_code": "ONEWORLD",
-      "extensions": [],
-      "carbon_emissions": null,
-      "price": null,
-      "departure_time": null,
-      "arrival_time": null,
-      "stops": 0,
-      "segments": []
-    },
-    {
-      "departure_airport": {
-        "code": null,
-        "name": null
-      },
-      "arrival_airport": {
-        "code": null,
-        "name": null
-      },
-      "duration": null,
-      "airplane": null,
-      "airline": "A",
-      "airline_code": "AJU",
-      "extensions": [],
-      "carbon_emissions": null,
-      "price": null,
-      "departure_time": null,
-      "arrival_time": null,
-      "stops": 0,
-      "segments": []
     }
   ],
   "note": "Successfully retrieved and parsed flight data from Google Flights"
