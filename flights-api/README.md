@@ -13,6 +13,7 @@ A Ruby client for searching flights on Google Flights with CLI support.
 
 - **[Data Model & Parsing Guide](docs/DATA_MODEL.md)** - Detailed documentation of request/response structures, data parsing, and reverse-engineered API details
 - **[Refactoring & Design Patterns](docs/REFACTORING.md)** - Design patterns and strategies for improving the parser implementation
+- **[Token Management & Browser Automation](docs/TOKEN_MANAGEMENT.md)** - Lazy-loading token system with browser automation using Ferrum
 
 ## Installation
 
