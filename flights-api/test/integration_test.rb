@@ -1,6 +1,7 @@
 require 'minitest/autorun'
 require 'minitest/reporters'
 require 'json'
+require 'fileutils'
 require_relative '../google_flights_client'
 
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
@@ -12,15 +13,28 @@ class GoogleFlightsIntegrationTest < Minitest::Test
   def setup
     skip "Integration tests disabled by default. Run with: ruby test/integration_test.rb" if ENV['SKIP_INTEGRATION']
     
-    @client = GoogleFlightsClient.new
+    @snapshot_file = File.join(__dir__, 'snapshots', 'last_integration_results.json')
     
-    # Make real API call
-    @result = @client.search(
-      origin: 'CGH',
-      destination: 'JPA',
-      departure_date: '2026-02-06',
-      return_date: '2026-02-27'
-    )
+    # Load from snapshot if exists, otherwise make real API call
+    if File.exist?(@snapshot_file)
+      puts "  📸 Loading cached response from snapshot..."
+      @result = JSON.parse(File.read(@snapshot_file), symbolize_names: true)
+    else
+      puts "  🌐 Making real API call (no snapshot found)..."
+      @client = GoogleFlightsClient.new
+      
+      @result = @client.search(
+        origin: 'CGH',
+        destination: 'JPA',
+        departure_date: '2026-02-06',
+        return_date: '2026-02-27'
+      )
+      
+      # Save snapshot for future runs
+      FileUtils.mkdir_p(File.dirname(@snapshot_file))
+      File.write(@snapshot_file, JSON.pretty_generate(@result))
+      puts "  💾 Saved snapshot to #{@snapshot_file}"
+    end
   end
 
   def test_api_returns_success
@@ -168,11 +182,7 @@ class GoogleFlightsIntegrationTest < Minitest::Test
     assert_empty missing_keys, "Missing keys in actual response: #{missing_keys.join(', ')}"
   end
 
-  def test_can_save_response_for_debugging
-    # Save actual response for manual inspection
-    output_file = File.join(__dir__, 'assets', 'last_integration_response.json')
-    File.write(output_file, JSON.pretty_generate(@result))
-    
-    assert File.exist?(output_file), "Should save response to file"
+  def test_snapshot_file_exists
+    assert File.exist?(@snapshot_file), "Snapshot file should exist after first run"
   end
 end
