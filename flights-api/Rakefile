@@ -1,11 +1,12 @@
 require 'rake/testtask'
 
-desc "Run all tests"
+desc "Run all tests (excluding slow integration tests)"
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.libs << "."
-  t.test_files = FileList['test/*_test.rb']
+  t.test_files = FileList['test/*_test.rb'].exclude('test/integration_test.rb')
   t.verbose = true
+  ENV['SKIP_INTEGRATION'] = '1'
 end
 
 desc "Run parser tests only"
@@ -30,6 +31,15 @@ Rake::TestTask.new(:test_client) do |t|
   t.libs << "."
   t.test_files = FileList['test/client_test.rb']
   t.verbose = true
+end
+
+desc "Run integration tests (SLOW - makes real API calls)"
+Rake::TestTask.new(:test_integration) do |t|
+  t.libs << "test"
+  t.libs << "."
+  t.test_files = FileList['test/integration_test.rb']
+  t.verbose = true
+  ENV.delete('SKIP_INTEGRATION')
 end
 
 desc "Run tests with coverage (if SimpleCov is available)"
